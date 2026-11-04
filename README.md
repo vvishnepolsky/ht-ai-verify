@@ -41,8 +41,9 @@ those paths run a clearly-labelled simulation.
 Jordan Reyes household and Elena Vasquez, MD provider — one pair per
 verification item, identical except for the single thing the AI should catch
 (expired term, wrong person, wrong employer, wrong license number, wrong
-document type). The console's **Test documents** page links them. Regenerate
-with `npm run test-documents` (needs Chrome for the PDF/PNG render).
+document type). They live only in the repo (not served by the app): download
+them from GitHub or the checkout and upload them through the hosted flow.
+Regenerate with `npm run test-documents` (needs Chrome for the PDF/PNG render).
 
 ## Layout
 

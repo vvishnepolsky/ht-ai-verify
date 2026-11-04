@@ -18,12 +18,9 @@
  *   GET    /api/requests/:id/file/:fileId
  *   POST   /api/demo/seed
  *   POST   /api/demo/reset
- *   GET    /api/test-documents
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
-import { readdirSync, existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { env, isArgyleLive, isClearLive, isEmailConfigured, isOpenAiConfigured, isTwilioConfigured } from '../env.js';
 import { store } from '../db.js';
 import { readJsonBody, sendBytes, sendError, sendJson } from '../http-utils.js';
@@ -59,7 +56,7 @@ function requestSummary(r: { id: string; status: string; tasks: { status: string
   };
 }
 
-export async function handleAdminApi(req: IncomingMessage, res: ServerResponse, url: URL, testDocsDir: string): Promise<boolean> {
+export async function handleAdminApi(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {
   const p = url.pathname;
   if (p === '/api/config' && req.method === 'GET') {
     sendJson(res, 200, {
@@ -234,10 +231,6 @@ export async function handleAdminApi(req: IncomingMessage, res: ServerResponse, 
       sendJson(res, 200, { reset: true, seeded: n });
       return true;
     }
-    if (p === '/api/test-documents' && req.method === 'GET') {
-      sendJson(res, 200, { documents: listTestDocuments(testDocsDir) });
-      return true;
-    }
     return false;
   } catch (err) {
     if (err instanceof ServiceError) sendError(res, err.status, err.code, err.message);
@@ -268,27 +261,6 @@ function parseReviewAction(body: Record<string, unknown>): ReviewAction {
       return { type, task_id, reason };
     default:
       throw new ServiceError(400, 'unknown_action');
-  }
-}
-
-export interface TestDocument {
-  group: 'household' | 'provider';
-  task: string;
-  expected: 'pass' | 'fail';
-  why: string;
-  files: { name: string; url: string; mime: string }[];
-}
-
-/** The generated pass/fail documents under docs/test-documents (index.json written by the generator). */
-export function listTestDocuments(dir: string): TestDocument[] {
-  const index = join(dir, 'index.json');
-  if (!existsSync(index)) return [];
-  try {
-    const list = JSON.parse(readFileSync(index, 'utf-8')) as TestDocument[];
-    const present = new Set(readdirSync(dir));
-    return list.map((d) => ({ ...d, files: d.files.filter((f) => present.has(f.name)) }));
-  } catch {
-    return [];
   }
 }
 

@@ -4,7 +4,6 @@ import { Glyph, I, go, useHashRoute } from './ui';
 import { Dashboard } from './Dashboard';
 import { CaseList } from './CaseList';
 import { CaseDetail } from './CaseDetail';
-import { TestDocuments } from './TestDocuments';
 
 export function Console() {
   const [config, setConfig] = useState<Config | null>(null);
@@ -48,7 +47,7 @@ export function Console() {
   }
 
   const detail = /^#\/(households|providers)\/([0-9a-f-]{36})$/i.exec(hash);
-  const section = hash.startsWith('#/households') ? 'households' : hash.startsWith('#/providers') ? 'providers' : hash.startsWith('#/test-documents') ? 'docs' : 'dashboard';
+  const section = hash.startsWith('#/households') ? 'households' : hash.startsWith('#/providers') ? 'providers' : 'dashboard';
 
   const seedDemo = async () => {
     setSeeding(true);
@@ -110,10 +109,6 @@ export function Console() {
             <a className={`nav-link${section === 'providers' ? ' active' : ''}`} href="#/providers">
               <I.Stetho /> Medicaid providers
             </a>
-            <div className="nav-group">Testing</div>
-            <a className={`nav-link${section === 'docs' ? ' active' : ''}`} href="#/test-documents">
-              <I.Docs /> Test documents
-            </a>
           </nav>
           <div className="foot">
             <strong>Integrations</strong>
@@ -150,8 +145,6 @@ export function Console() {
             <CaseList kind="household" config={config} />
           ) : section === 'providers' ? (
             <CaseList kind="provider" config={config} />
-          ) : section === 'docs' ? (
-            <TestDocuments />
           ) : (
             <Dashboard config={config} />
           )}

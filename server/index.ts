@@ -3,7 +3,6 @@
  *   /api/*          worker-console REST (admin-api.ts, password-gated)
  *   /flow-api/*     token-scoped hosted-flow REST (flow-api.ts)
  *   /hosted/*       simulated CLEAR / Argyle pages (only when not configured)
- *   /test-documents/* the generated pass/fail sample documents
  *   /health, and the built web bundle (dist/public) for everything else —
  *   the console at `/` and the hosted flow at `/flow?token=…`.
  */
@@ -21,7 +20,6 @@ import { seedDemoData } from './demo/seed.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 // dist/server/index.js → dist/public ; server/index.ts (tsx) → dist/public too.
 const PUBLIC_DIR = HERE.includes(`${'dist'}`) ? join(HERE, '..', 'public') : join(HERE, '..', 'dist', 'public');
-const TEST_DOCS_DIR = HERE.includes('dist') ? join(HERE, '..', '..', 'docs', 'test-documents') : join(HERE, '..', 'docs', 'test-documents');
 
 function securityHeaders(res: ServerResponse): void {
   res.setHeader('X-Frame-Options', 'DENY');
@@ -39,7 +37,7 @@ const httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
     return;
   }
   if (url.pathname.startsWith('/api/')) {
-    void handleAdminApi(req, res, url, TEST_DOCS_DIR).then((handled) => {
+    void handleAdminApi(req, res, url).then((handled) => {
       if (!handled) sendJson(res, 404, { error: 'not_found' });
     });
     return;
@@ -52,11 +50,6 @@ const httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
   }
   if (req.method === 'GET' && url.pathname.startsWith('/hosted/')) {
     if (handleHosted(url.pathname, url.searchParams, res)) return;
-  }
-  if (req.method === 'GET' && url.pathname.startsWith('/test-documents/')) {
-    if (serveStatic(TEST_DOCS_DIR, url.pathname.slice('/test-documents'.length), res, false)) return;
-    sendText(res, 404, 'Not found');
-    return;
   }
   if (req.method === 'GET' && serveStatic(PUBLIC_DIR, url.pathname, res)) return;
   sendText(res, 404, 'Not found');

@@ -309,13 +309,6 @@ export interface NppesSummary {
   enumeration_date: string;
   last_updated: string;
 }
-export interface TestDocument {
-  group: 'household' | 'provider';
-  task: string;
-  expected: 'pass' | 'fail';
-  why: string;
-  files: { name: string; url: string; mime: string }[];
-}
 
 // --- labels ---------------------------------------------------------------------
 

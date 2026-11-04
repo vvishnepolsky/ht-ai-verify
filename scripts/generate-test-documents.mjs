@@ -243,7 +243,7 @@ function insuranceCert({ insured, policy, effective, expires, carrier }) {
 const docs = [];
 function add(group, task, expected, why, name, html) {
   writeFileSync(join(OUT, `${name}.html`), html);
-  docs.push({ group, task, expected, why, files: [{ name: `${name}.pdf`, url: `/test-documents/${name}.pdf`, mime: 'application/pdf' }, { name: `${name}.png`, url: `/test-documents/${name}.png`, mime: 'image/png' }] });
+  docs.push({ group, task, expected, why, files: [`${name}.pdf`, `${name}.png`] });
 }
 
 // Household
@@ -291,7 +291,7 @@ documents to **Elena Vasquez, MD** (PRV-2026-00077).
 
 | File | Expected | Why |
 | --- | --- | --- |
-${docs.map((d) => `| ${d.files[0].name} | ${d.expected} | ${d.why.replace(/\|/g, '/')} |`).join('\n')}
+${docs.map((d) => `| ${d.files[0]} | ${d.expected} | ${d.why.replace(/\|/g, '/')} |`).join('\n')}
 `,
 );
 console.log(`wrote ${docs.length} documents to ${OUT}`);

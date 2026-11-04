@@ -18,7 +18,6 @@ export default defineConfig({
       '/api': 'http://localhost:4040',
       '/flow-api': 'http://localhost:4040',
       '/hosted': 'http://localhost:4040',
-      '/test-documents': 'http://localhost:4040',
     },
   },
 });
