@@ -114,7 +114,10 @@ const MIME: Record<string, string> = {
  */
 export function serveStatic(root: string, pathname: string, res: ServerResponse, spaFallback = true): boolean {
   const safe = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, '');
-  const candidates = [join(root, safe), ...(spaFallback ? [join(root, 'index.html')] : [])];
+  // Only route-like paths (no file extension) fall back to the SPA shell; a
+  // missing asset or document path is a real 404, not a 200 of index.html.
+  const routeLike = !extname(safe);
+  const candidates = [join(root, safe), ...(spaFallback && routeLike ? [join(root, 'index.html')] : [])];
   for (const file of candidates) {
     if (!file.startsWith(root)) continue;
     try {
