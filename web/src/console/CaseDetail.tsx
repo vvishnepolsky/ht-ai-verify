@@ -356,7 +356,13 @@ function PreviewTasks({
               <div className="subject-head">
                 <h3>{g.heading}</h3>
               </div>
-              <table>
+              <table className="preview">
+                <colgroup>
+                  <col style={{ width: '52%' }} />
+                  <col style={{ width: '17%' }} />
+                  <col style={{ width: '21%' }} />
+                  <col style={{ width: '10%' }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th>Item</th>

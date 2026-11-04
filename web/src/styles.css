@@ -423,3 +423,9 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-
 /* ---- Inline icon sizing outside buttons ------------------------------------- */
 .backlink svg, .link-btn svg, .avatar svg, .cake svg, .kv svg { width: 14px; height: 14px; }
 .done-card h1 { font-size: 22px; }
+
+/* ---- Preview tables: fixed, shared column widths so grouped tables align ---- */
+table.preview { table-layout: fixed; }
+table.preview th, table.preview td { white-space: normal; overflow-wrap: anywhere; }
+table.preview th:first-child, table.preview td:first-child { padding-left: 12px; }
+table.preview th:last-child, table.preview td:last-child { padding-right: 12px; }
