@@ -26,12 +26,30 @@ function npiWithCheckDigit(nine: string): string {
 }
 
 export const DEMO_NPIS = {
+  vishnepolsky: npiWithCheckDigit('199940006'),
   vasquez: npiWithCheckDigit('199940017'),
   bell: npiWithCheckDigit('199940028'),
   harmony: npiWithCheckDigit('199940039'),
 };
 
 export const DEMO_HOUSEHOLDS: HouseholdCase[] = [
+  // Vadim's own test household — real contact details on purpose so the SMS link lands on his phone.
+  {
+    kind: 'household',
+    case_number: 'HH-2026-00402',
+    programs: ['SNAP', 'Medicaid'],
+    applied_at: '2026-11-02',
+    primary_contact: { name: 'Vadim Vishnepolsky', phone: '(419) 902-4865', email: 'vadim.vishnepolsky@gmail.com' },
+    address: { street: '2100 West End Ave, Apt 12', city: 'Nashville', state: 'TN', zip: '37203' },
+    members: [
+      { name: 'Vadim Vishnepolsky', dob: '1985-06-18', relationship: 'self', employers: [{ name: 'Walmart', monthly_gross: 1100 }] },
+      { name: 'Allison Hackett', dob: '1987-02-09', relationship: 'spouse', employers: [{ name: 'Kroger', monthly_gross: 450 }] },
+    ],
+    housing: { type: 'rent', monthly_cost: 950, landlord: 'West End Property Management', utilities: ['electricity', 'natural gas'] },
+    assets: { declared_total: 610, accounts: [{ institution: 'First Cumberland Bank', type: 'checking' }] },
+    medical: { has_elderly_disabled: false, monthly_expenses: 0 },
+    notes: 'Test household for the live SMS path. Household of 2, both working.',
+  },
   {
     kind: 'household',
     case_number: 'HH-2026-00418',
@@ -68,6 +86,31 @@ export const DEMO_HOUSEHOLDS: HouseholdCase[] = [
 ];
 
 export const DEMO_PROVIDERS: ProviderCase[] = [
+  // Vadim's own test provider — real contact details on purpose for the email link path.
+  {
+    kind: 'provider',
+    case_number: 'PRV-2026-00071',
+    name: 'Vadim Vishnepolsky',
+    credential_suffix: 'MD',
+    npi: DEMO_NPIS.vishnepolsky,
+    entity_type: 'individual',
+    provider_type: 'Physician — Family Medicine',
+    taxonomy_code: '207Q00000X',
+    specialty: 'Family Medicine',
+    practice: {
+      name: 'West End Family Practice',
+      address: { street: '2100 West End Ave, Suite 300', city: 'Nashville', state: 'TN', zip: '37203' },
+      phone: '(419) 902-4865',
+    },
+    contact: { name: 'Vadim Vishnepolsky', phone: '(419) 902-4865', email: 'vadim.vishnepolsky@gmail.com' },
+    enrollment: { application_type: 'new', submitted_at: '2026-11-03' },
+    credentials: [
+      { type: 'state_license', label: 'Tennessee medical license', number: 'MD-50117', issuer: 'Tennessee Board of Medical Examiners', state: 'TN', issued_on: '2019-08-01', expires_on: '2027-07-31' },
+      { type: 'dea', label: 'DEA registration', number: 'BV5011742', issuer: 'U.S. Drug Enforcement Administration', expires_on: '2027-05-31' },
+      { type: 'malpractice', label: 'Professional liability insurance', number: 'PL-8841206', issuer: 'MedPro Mutual Assurance', expires_on: '2027-03-31' },
+    ],
+    notes: 'Test provider for the email link path.',
+  },
   {
     kind: 'provider',
     case_number: 'PRV-2026-00077',

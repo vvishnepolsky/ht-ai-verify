@@ -248,5 +248,155 @@
       "prv-license-fail-wrong-type.pdf",
       "prv-license-fail-wrong-type.png"
     ]
+  },
+  {
+    "group": "household",
+    "task": "Photo ID — Vadim Vishnepolsky",
+    "expected": "pass",
+    "why": "Tennessee driver license in Vadim Vishnepolsky’s name, expires 2028.",
+    "files": [
+      "vv-photo-id-pass.pdf",
+      "vv-photo-id-pass.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Photo ID — Vadim Vishnepolsky",
+    "expected": "fail",
+    "why": "Same license, expired 06/18/2023 → “no longer in effect”.",
+    "files": [
+      "vv-photo-id-fail-expired.pdf",
+      "vv-photo-id-fail-expired.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Pay stubs — Vadim (Walmart)",
+    "expected": "pass",
+    "why": "Walmart earnings statement for Vadim, pay period Oct 11–24, 2026.",
+    "files": [
+      "vv-paystub-pass.pdf",
+      "vv-paystub-pass.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Pay stubs — Vadim (Walmart)",
+    "expected": "fail",
+    "why": "Same statement from October 2024 → outside the last-30-days window.",
+    "files": [
+      "vv-paystub-fail-old.pdf",
+      "vv-paystub-fail-old.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Pay stubs — Allison (Kroger)",
+    "expected": "pass",
+    "why": "Kroger earnings statement for Allison Hackett, pay period Oct 11–24, 2026.",
+    "files": [
+      "vv-paystub-allison-pass.pdf",
+      "vv-paystub-allison-pass.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Bank statements (last 60 days)",
+    "expected": "pass",
+    "why": "First Cumberland Bank statement for Vadim, Sept 25 – Oct 24, 2026.",
+    "files": [
+      "vv-bank-statement-pass.pdf",
+      "vv-bank-statement-pass.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Lease agreement",
+    "expected": "pass",
+    "why": "Current lease, April 2026 – March 2027, rent $950 — matches the application.",
+    "files": [
+      "vv-lease-pass.pdf",
+      "vv-lease-pass.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Lease agreement",
+    "expected": "fail",
+    "why": "Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application.",
+    "files": [
+      "vv-lease-fail-expired.pdf",
+      "vv-lease-fail-expired.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Utility bill",
+    "expected": "pass",
+    "why": "October 2026 electric bill at the service address in Vadim’s name.",
+    "files": [
+      "vv-utility-bill-pass.pdf",
+      "vv-utility-bill-pass.png"
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Photo ID — Vadim Vishnepolsky",
+    "expected": "pass",
+    "why": "Tennessee driver license in Vadim Vishnepolsky’s name, expires 2028.",
+    "files": [
+      "vvp-photo-id-pass.pdf",
+      "vvp-photo-id-pass.png"
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Tennessee medical license MD-50117",
+    "expected": "pass",
+    "why": "Active TN medical license MD-50117 for Vadim Vishnepolsky, MD, valid through July 31, 2027.",
+    "files": [
+      "vvp-license-pass.pdf",
+      "vvp-license-pass.png"
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Tennessee medical license MD-50117",
+    "expected": "fail",
+    "why": "Same license, but the term ended July 31, 2024 → lapsed.",
+    "files": [
+      "vvp-license-fail-expired.pdf",
+      "vvp-license-fail-expired.png"
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "DEA registration BV5011742",
+    "expected": "pass",
+    "why": "DEA certificate BV5011742 for Vadim Vishnepolsky, MD, expires May 31, 2027.",
+    "files": [
+      "vvp-dea-pass.pdf",
+      "vvp-dea-pass.png"
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Professional liability insurance",
+    "expected": "pass",
+    "why": "MedPro certificate for policy PL-8841206, in force Apr 1, 2026 – Mar 31, 2027.",
+    "files": [
+      "vvp-insurance-pass.pdf",
+      "vvp-insurance-pass.png"
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Professional liability insurance",
+    "expected": "fail",
+    "why": "Policy expired March 31, 2025 → lapsed.",
+    "files": [
+      "vvp-insurance-fail-expired.pdf",
+      "vvp-insurance-fail-expired.png"
+    ]
   }
 ]

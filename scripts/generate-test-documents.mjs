@@ -117,18 +117,18 @@ function payStub({ employee, employer, periodStart, periodEnd, payDate, gross, n
   );
 }
 
-function lease({ term, rent, signed }) {
+function lease({ term, rent, signed, h = H }) {
   return page(
     'Residential Lease Agreement',
-    `<header><div class="org">${H.landlord}</div><h1>Residential Lease Agreement</h1><div class="sub">${H.address}</div></header>
-    <p>This Residential Lease Agreement ("Agreement") is made between <b>${H.landlord}</b> ("Landlord"), ${H.landlordPhone}, and <b>${H.tenant}</b> and <b>${H.spouse}</b> ("Tenant"), for the premises located at <b>${H.address}</b> (the "Premises"). Other occupants: ${H.child} (minor child).</p>
+    `<header><div class="org">${h.landlord}</div><h1>Residential Lease Agreement</h1><div class="sub">${h.address}</div></header>
+    <p>This Residential Lease Agreement ("Agreement") is made between <b>${h.landlord}</b> ("Landlord"), ${h.landlordPhone}, and <b>${h.tenant}</b> and <b>${h.spouse}</b> ("Tenant"), for the premises located at <b>${h.address}</b> (the "Premises").${h.child ? ` Other occupants: ${h.child} (minor child).` : ''}</p>
     <div class="box"><div class="lbl">Lease term</div><div class="big">${term.start} through ${term.end}</div></div>
     <p><b>1. Rent.</b> Tenant agrees to pay Landlord monthly rent of <b>${money(rent)}</b>, due on the first day of each month, by check or electronic payment.</p>
     <p><b>2. Security deposit.</b> Tenant has deposited ${money(rent)} as a security deposit, held in accordance with Tennessee law.</p>
     <p><b>3. Utilities.</b> Water and sewer service are included in the monthly rent. Electricity and natural gas are the responsibility of the Tenant.</p>
     <p><b>4. Use.</b> The Premises shall be used solely as a private residence for the Tenant and the occupants named above.</p>
     <p><b>5. Renewal.</b> This Agreement does not renew automatically. Any renewal requires a new written agreement signed by both parties.</p>
-    <div class="sig"><div>${H.landlord}<br>Landlord · signed ${signed}</div><div>${H.tenant}<br>Tenant · signed ${signed}</div><div>${H.spouse}<br>Tenant · signed ${signed}</div></div>`,
+    <div class="sig"><div>${h.landlord}<br>Landlord · signed ${signed}</div><div>${h.tenant}<br>Tenant · signed ${signed}</div><div>${h.spouse}<br>Tenant · signed ${signed}</div></div>`,
   );
 }
 
@@ -201,12 +201,12 @@ function medicalLicense({ name, number, issued, expires }) {
   );
 }
 
-function deaCertificate({ name, number, expires, issued }) {
+function deaCertificate({ name, number, expires, issued, p = P }) {
   return page(
     'DEA Certificate of Registration',
     `<div class="cert"><div class="org">United States Department of Justice · Drug Enforcement Administration</div><h1>Certificate of Registration</h1>
     <div class="seal">DEA · CONTROLLED SUBSTANCES</div>
-    <table style="max-width:600px;margin:14px auto"><tr><th>DEA registration number</th><td><b>${number}</b></td></tr><tr><th>Registrant</th><td>${name}<br>${P.practice}<br>${P.address}</td></tr><tr><th>Business activity</th><td>Practitioner</td></tr><tr><th>Schedules</th><td>2, 2N, 3, 3N, 4, 5</td></tr><tr><th>Issue date</th><td>${issued}</td></tr><tr><th>Expiration date</th><td><b>${expires}</b></td></tr></table>
+    <table style="max-width:600px;margin:14px auto"><tr><th>DEA registration number</th><td><b>${number}</b></td></tr><tr><th>Registrant</th><td>${name}<br>${p.practice}<br>${p.address}</td></tr><tr><th>Business activity</th><td>Practitioner</td></tr><tr><th>Schedules</th><td>2, 2N, 3, 3N, 4, 5</td></tr><tr><th>Issue date</th><td>${issued}</td></tr><tr><th>Expiration date</th><td><b>${expires}</b></td></tr></table>
     <div class="box" style="max-width:520px;margin:18px auto"><div class="lbl">Expiration date</div><div class="big">${expires}</div></div>
     <p class="fine">This registration is not transferable. Registrant must notify DEA of any change of address or business activity.</p></div>`,
   );
@@ -226,11 +226,11 @@ function boardCert({ name, number, valid }) {
   );
 }
 
-function insuranceCert({ insured, policy, effective, expires, carrier }) {
+function insuranceCert({ insured, policy, effective, expires, carrier, p = P }) {
   return page(
     'Certificate of Liability Insurance',
     `<header><div class="org">${carrier}</div><h1>Certificate of Liability Insurance</h1><div class="sub">Professional Liability (Medical Malpractice) · Claims-made</div></header>
-    <table><tr><th>Insured</th><td>${insured}<br>${P.practice}<br>${P.address}</td><th>Certificate holder</th><td>TennCare Provider Enrollment<br>310 Great Circle Road, Nashville, TN 37243</td></tr></table>
+    <table><tr><th>Insured</th><td>${insured}<br>${p.practice}<br>${p.address}</td><th>Certificate holder</th><td>TennCare Provider Enrollment<br>310 Great Circle Road, Nashville, TN 37243</td></tr></table>
     <table><tr><th>Policy number</th><th>Coverage</th><th>Effective</th><th>Expiration</th><th>Limits</th></tr>
     <tr><td><b>${policy}</b></td><td>Professional liability</td><td>${effective}</td><td><b>${expires}</b></td><td>$1,000,000 each claim / $3,000,000 aggregate</td></tr></table>
     <div class="box"><div class="lbl">Policy period</div><div class="big">${effective} – ${expires}</div></div>
@@ -275,6 +275,34 @@ add('provider', 'Professional liability insurance', 'fail', 'Policy expired Janu
 add('provider', 'Professional liability insurance', 'fail', 'Current certificate for policy PL-9910227 → policy number contradicts the application.', 'prv-insurance-fail-wrong-policy', insuranceCert({ insured: P.name, policy: 'PL-9910227', effective: 'February 1, 2026', expires: 'January 31, 2027', carrier: 'MedPro Mutual Assurance' }));
 add('provider', 'Tennessee medical license MD-48213', 'fail', 'The DEA certificate uploaded for the state-license item → wrong document type.', 'prv-license-fail-wrong-type', deaCertificate({ name: P.name, number: P.dea, issued: 'April 1, 2024', expires: 'March 31, 2027' }));
 
+// --- Vadim Vishnepolsky — the live-contact test household (HH-2026-00402) and provider (PRV-2026-00071)
+const V = {
+  tenant: 'Vadim Vishnepolsky',
+  spouse: 'Allison Hackett',
+  child: '',
+  dob: '06/18/1985',
+  address: '2100 West End Ave, Apt 12, Nashville, TN 37203',
+  landlord: 'West End Property Management',
+  landlordPhone: '(615) 555-0177',
+};
+const VP = { practice: 'West End Family Practice', address: '2100 West End Ave, Suite 300, Nashville, TN 37203' };
+const vLicense = (id) => driverLicense({ name: V.tenant, dob: V.dob, issued: '06/18/2024', expires: '06/18/2028', number: id }).replace(H.address, V.address);
+add('household', 'Photo ID — Vadim Vishnepolsky', 'pass', 'Tennessee driver license in Vadim Vishnepolsky’s name, expires 2028.', 'vv-photo-id-pass', vLicense('441209318'));
+add('household', 'Photo ID — Vadim Vishnepolsky', 'fail', 'Same license, expired 06/18/2023 → “no longer in effect”.', 'vv-photo-id-fail-expired', driverLicense({ name: V.tenant, dob: V.dob, issued: '06/18/2019', expires: '06/18/2023', number: '441209318' }).replace(H.address, V.address));
+add('household', 'Pay stubs — Vadim (Walmart)', 'pass', 'Walmart earnings statement for Vadim, pay period Oct 11–24, 2026.', 'vv-paystub-pass', payStub({ employee: V.tenant, employer: 'Walmart', periodStart: '10/11/2026', periodEnd: '10/24/2026', payDate: '10/30/2026', gross: 507.69, net: 441.2, address: V.address }));
+add('household', 'Pay stubs — Vadim (Walmart)', 'fail', 'Same statement from October 2024 → outside the last-30-days window.', 'vv-paystub-fail-old', payStub({ employee: V.tenant, employer: 'Walmart', periodStart: '10/13/2024', periodEnd: '10/26/2024', payDate: '11/01/2024', gross: 492.3, net: 428.1, address: V.address }));
+add('household', 'Pay stubs — Allison (Kroger)', 'pass', 'Kroger earnings statement for Allison Hackett, pay period Oct 11–24, 2026.', 'vv-paystub-allison-pass', payStub({ employee: V.spouse, employer: 'Kroger', periodStart: '10/11/2026', periodEnd: '10/24/2026', payDate: '10/30/2026', gross: 207.69, net: 184.5, address: V.address }));
+add('household', 'Bank statements (last 60 days)', 'pass', 'First Cumberland Bank statement for Vadim, Sept 25 – Oct 24, 2026.', 'vv-bank-statement-pass', bankStatement({ holder: V.tenant, periodStart: '09/25/2026', periodEnd: '10/24/2026', opening: 540.1, closing: 617.04, bank: H.bank }).replace(H.address, V.address));
+add('household', 'Lease agreement', 'pass', 'Current lease, April 2026 – March 2027, rent $950 — matches the application.', 'vv-lease-pass', lease({ term: { start: 'April 1, 2026', end: 'March 31, 2027' }, rent: 950, signed: 'March 15, 2026', h: V }));
+add('household', 'Lease agreement', 'fail', 'Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application.', 'vv-lease-fail-expired', lease({ term: { start: 'April 1, 2023', end: 'March 31, 2024' }, rent: 875, signed: 'March 15, 2023', h: V }));
+add('household', 'Utility bill', 'pass', 'October 2026 electric bill at the service address in Vadim’s name.', 'vv-utility-bill-pass', utilityBill({ customer: V.tenant, serviceAddress: V.address, billDate: '10/18/2026', due: '11/08/2026', amount: 102.4 }));
+add('provider', 'Photo ID — Vadim Vishnepolsky', 'pass', 'Tennessee driver license in Vadim Vishnepolsky’s name, expires 2028.', 'vvp-photo-id-pass', vLicense('441209318'));
+add('provider', 'Tennessee medical license MD-50117', 'pass', 'Active TN medical license MD-50117 for Vadim Vishnepolsky, MD, valid through July 31, 2027.', 'vvp-license-pass', medicalLicense({ name: 'Vadim Vishnepolsky, MD', number: 'MD-50117', issued: 'August 1, 2025', expires: 'July 31, 2027' }));
+add('provider', 'Tennessee medical license MD-50117', 'fail', 'Same license, but the term ended July 31, 2024 → lapsed.', 'vvp-license-fail-expired', medicalLicense({ name: 'Vadim Vishnepolsky, MD', number: 'MD-50117', issued: 'August 1, 2023', expires: 'July 31, 2024' }));
+add('provider', 'DEA registration BV5011742', 'pass', 'DEA certificate BV5011742 for Vadim Vishnepolsky, MD, expires May 31, 2027.', 'vvp-dea-pass', deaCertificate({ name: 'Vadim Vishnepolsky, MD', number: 'BV5011742', issued: 'June 1, 2024', expires: 'May 31, 2027', p: VP }));
+add('provider', 'Professional liability insurance', 'pass', 'MedPro certificate for policy PL-8841206, in force Apr 1, 2026 – Mar 31, 2027.', 'vvp-insurance-pass', insuranceCert({ insured: 'Vadim Vishnepolsky, MD', policy: 'PL-8841206', effective: 'April 1, 2026', expires: 'March 31, 2027', carrier: 'MedPro Mutual Assurance', p: VP }));
+add('provider', 'Professional liability insurance', 'fail', 'Policy expired March 31, 2025 → lapsed.', 'vvp-insurance-fail-expired', insuranceCert({ insured: 'Vadim Vishnepolsky, MD', policy: 'PL-8841206', effective: 'April 1, 2024', expires: 'March 31, 2025', carrier: 'MedPro Mutual Assurance', p: VP }));
+
 writeFileSync(join(OUT, 'index.json'), JSON.stringify(docs, null, 2));
 writeFileSync(
   join(OUT, 'README.md'),
@@ -285,9 +313,11 @@ Synthetic documents for exercising the AI first-pass review. Generated by
 \`scripts/render-test-documents.sh\` (headless Chrome). Do not hand-edit the
 HTML — change the generator and re-run \`npm run test-documents\`.
 
-Every name, address, number and NPI is fabricated. The household documents
-belong to the seeded **Jordan Reyes** case (HH-2026-00418); the provider
-documents to **Elena Vasquez, MD** (PRV-2026-00077).
+Documents prefixed "hh-" belong to the seeded **Jordan Reyes** household
+(HH-2026-00418), "prv-" to **Elena Vasquez, MD** (PRV-2026-00077), and "vv-" /
+"vvp-" to the live-contact test household and provider **Vadim Vishnepolsky**
+(HH-2026-00402 / PRV-2026-00071). Every address, number, license and NPI is
+fabricated.
 
 | File | Expected | Why |
 | --- | --- | --- |
