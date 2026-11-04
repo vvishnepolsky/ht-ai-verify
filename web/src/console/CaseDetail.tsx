@@ -23,6 +23,7 @@ import { daysUntil, formatDate, formatDateTime, formatPhone, money } from '../fo
 import { CopyBox, Dialog, I, Pill, go } from './ui';
 import { NpiPanel, ReviewPanel, groupTasks } from './ReviewPanel';
 import { ContactDialog } from './ContactDialog';
+import { NpiFix } from './NpiFix';
 
 type Tab = 'case' | 'verifications' | 'activity';
 
@@ -200,7 +201,7 @@ export function CaseDetail({ id, config }: { id: string; config: Config }) {
         ))}
       </div>
 
-      {tab === 'case' && (household ? <HouseholdData d={c.data as HouseholdCase} /> : <ProviderData d={c.data as ProviderCase} onRunNpi={() => void runNpi()} npiBusy={npiBusy} />)}
+      {tab === 'case' && (household ? <HouseholdData d={c.data as HouseholdCase} /> : <ProviderData d={c.data as ProviderCase} caseId={c.id} requestId={request && request.status !== 'verified' ? request.id : undefined} onRunNpi={() => void runNpi()} onReload={() => load()} npiBusy={npiBusy} />)}
 
       {tab === 'verifications' &&
         (request ? (
@@ -492,7 +493,7 @@ function HouseholdData({ d }: { d: HouseholdCase }) {
   );
 }
 
-function ProviderData({ d, onRunNpi, npiBusy }: { d: ProviderCase; onRunNpi: () => void; npiBusy: boolean }) {
+function ProviderData({ d, caseId, requestId, onRunNpi, onReload, npiBusy }: { d: ProviderCase; caseId: string; requestId?: string; onRunNpi: () => void; onReload: () => Promise<void>; npiBusy: boolean }) {
   return (
     <div className="stack">
       <div className="two-col">
@@ -588,7 +589,14 @@ function ProviderData({ d, onRunNpi, npiBusy }: { d: ProviderCase; onRunNpi: () 
             <I.Search /> {npiBusy ? 'Checking…' : d.npi_check ? 'Re-run check' : 'Run check'}
           </button>
         </div>
-        <div className="card-body">{d.npi_check ? <NpiPanel v={d.npi_check as NpiVerification} /> : <p className="muted">Not checked yet. The check also runs automatically when the secure link is sent.</p>}</div>
+        <div className="card-body stack tight">
+          {d.npi_check ? <NpiPanel v={d.npi_check as NpiVerification} /> : <p className="muted">Not checked yet. The check also runs automatically when the secure link is sent.</p>}
+          {d.npi_check && d.npi_check.flags.length > 0 && (
+            <div>
+              <NpiFix caseId={caseId} requestId={requestId} npi={d.npi} name={d.name} onUpdated={onReload} />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="card flush">

@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { env, isEmailConfigured, isTwilioConfigured } from '../env.js';
 import { store } from '../db.js';
 import { runDocumentReview } from '../ai/ocr.js';
+import { normalizeUpload } from '../ai/normalize.js';
 import { checkNpi } from '../integrations/npi.js';
 import { normalizePhone, sendSms } from '../integrations/twilio.js';
 import { isEmailAddress, sendEmail } from '../integrations/email.js';
@@ -224,9 +225,20 @@ export const verificationService = {
     const open = (await store.listRequests({ caseId: c.id })).find((r) => r.status !== 'verified') ?? null;
     if (!open) return { npi_check, request: null };
     const now = new Date().toISOString();
+    // The title/declared facts name the NPI — re-derive them so a corrected
+    // number shows on the item, not the typo it replaced.
+    const fresh = deriveTasks(c.data, now).find((t) => t.category === 'npi');
     const tasks = open.tasks.map((t) =>
       t.category === 'npi' && t.status !== 'approved'
-        ? { ...t, npi_verification: npi_check, method: 'nppes' as const, status: 'provided' as const, reviewer_note: undefined, updated_at: now }
+        ? {
+            ...t,
+            ...(fresh ? { title: fresh.title, reason: fresh.reason, declared: fresh.declared, subject: fresh.subject } : {}),
+            npi_verification: npi_check,
+            method: 'nppes' as const,
+            status: 'provided' as const,
+            reviewer_note: undefined,
+            updated_at: now,
+          }
         : t,
     );
     const updated: VerificationRequest = {
@@ -316,6 +328,9 @@ export const verificationService = {
     if (file.bytes.length > env.MAX_FILE_BYTES) throw new ServiceError(413, 'file_too_large');
     const task = r.tasks.find((t) => t.id === taskId);
     if (!task) throw new ServiceError(404, 'task_not_found');
+    // iPhone photo-library uploads arrive as HEIC, which browsers cannot
+    // render and the vision model does not accept — convert to JPEG first.
+    file = await normalizeUpload(file);
     const meta: UploadedFileMeta = {
       file_id: randomUUID(),
       mime: file.mime,

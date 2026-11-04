@@ -23,6 +23,8 @@ import {
 } from '../api';
 import { formatDate, formatDateTime, initials, money } from '../format';
 import { Chip, CopyBox, Dialog, I, ModeTag, Pill } from './ui';
+import { AuthImage, openAuthedFile, useAuthedFile } from './AuthFile';
+import { NpiFix } from './NpiFix';
 
 const ACTION_ERROR = 'That action could not be completed. Refresh and try again.';
 
@@ -166,6 +168,7 @@ export function ReviewPanel({
               onApprove={() => void review({ action: 'approve_task', task_id: t.id })}
               onReject={() => setRejectTarget(t)}
               onClear={() => setClearTarget(t)}
+              onRequestChange={(r) => onChange(r)}
               onRecheckNpi={async () => {
                 setBusy(true);
                 try {
@@ -242,6 +245,7 @@ function TaskReviewCard({
   onReject,
   onClear,
   onRecheckNpi,
+  onRequestChange,
 }: {
   request: VerificationRequest;
   task: VerificationTask;
@@ -251,6 +255,7 @@ function TaskReviewCard({
   onReject: () => void;
   onClear: () => void;
   onRecheckNpi: () => void;
+  onRequestChange: (r: VerificationRequest) => void;
 }) {
   const isNpi = task.category === 'npi';
   const reviewable = canReview && task.status === 'provided';
@@ -305,9 +310,12 @@ function TaskReviewCard({
               </>
             )}
             {isNpi && task.status !== 'approved' && (
-              <button type="button" className="btn outline sm" disabled={busy} onClick={onRecheckNpi}>
-                Re-run registry check
-              </button>
+              <>
+                <button type="button" className="btn outline sm" disabled={busy} onClick={onRecheckNpi}>
+                  Re-run registry check
+                </button>
+                <NpiFix caseId={request.case_id} requestId={request.id} npi={task.npi_verification?.npi ?? ''} name={task.subject ?? request.subject_name} onUpdated={(r) => r && onRequestChange(r)} />
+              </>
             )}
             {clearable && (
               <button type="button" className="btn danger sm" disabled={busy} onClick={onClear}>
@@ -390,7 +398,7 @@ function FileList({ request, task }: { request: VerificationRequest; task: Verif
         return (
           <div key={f.file_id} className="file-row">
             <button type="button" className="thumb" onClick={() => setView(f)} aria-label={`View ${f.filename ?? 'document'}`}>
-              {f.mime.startsWith('image/') ? <img src={url} alt="" /> : <I.File />}
+              {f.mime.startsWith('image/') ? <AuthImage url={url} alt="" /> : <I.File />}
             </button>
             <div className="file-main">
               <div className="file-name">
@@ -407,24 +415,36 @@ function FileList({ request, task }: { request: VerificationRequest; task: Verif
           </div>
         );
       })}
-      {view && (
-        <Dialog title={view.filename ?? 'Document'} onClose={() => setView(null)}>
-          {view.mime.startsWith('image/') ? (
-            <img src={`/api/requests/${request.id}/file/${view.file_id}`} alt={view.filename ?? 'Uploaded document'} style={{ maxWidth: '100%', borderRadius: 6 }} />
-          ) : (
-            <iframe title={view.filename ?? 'Document'} src={`/api/requests/${request.id}/file/${view.file_id}`} style={{ width: '100%', height: '70vh', border: '1px solid var(--ht-hairline)', borderRadius: 6 }} />
-          )}
-          <div className="foot">
-            <a className="btn outline" href={`/api/requests/${request.id}/file/${view.file_id}`} target="_blank" rel="noreferrer">
-              Open in new tab
-            </a>
-            <button type="button" className="btn primary" onClick={() => setView(null)}>
-              Close
-            </button>
-          </div>
-        </Dialog>
-      )}
+      {view && <FileViewer requestId={request.id} file={view} onClose={() => setView(null)} />}
     </div>
+  );
+}
+
+function FileViewer({ requestId, file, onClose }: { requestId: string; file: UploadedFileMeta; onClose: () => void }) {
+  const url = `/api/requests/${requestId}/file/${file.file_id}`;
+  const { src, error } = useAuthedFile(url);
+  return (
+    <Dialog title={file.filename ?? 'Document'} onClose={onClose}>
+      {error ? (
+        <p className="muted">This file could not be loaded.</p>
+      ) : !src ? (
+        <div className="pending">
+          <span className="spinner" aria-hidden /> Loading…
+        </div>
+      ) : file.mime.startsWith('image/') ? (
+        <img src={src} alt={file.filename ?? 'Uploaded document'} style={{ maxWidth: '100%', borderRadius: 6 }} />
+      ) : (
+        <iframe title={file.filename ?? 'Document'} src={src} style={{ width: '100%', height: '70vh', border: '1px solid var(--ht-hairline)', borderRadius: 6 }} />
+      )}
+      <div className="foot">
+        <button type="button" className="btn outline" onClick={() => void openAuthedFile(url)}>
+          Open in new tab
+        </button>
+        <button type="button" className="btn primary" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </Dialog>
   );
 }
 

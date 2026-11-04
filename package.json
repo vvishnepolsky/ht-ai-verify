@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "description": "AI Verify — verification collection + AI first-pass review for benefit households (SMS link) and Medicaid providers (email link), with a Hearth-styled worker console.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx watch server/index.ts",
     "dev:web": "vite --config web/vite.config.ts",
@@ -17,9 +19,11 @@
     "test-documents": "node scripts/generate-test-documents.mjs && bash scripts/render-test-documents.sh"
   },
   "dependencies": {
+    "heic-convert": "^2.1.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/heic-convert": "^2.1.1",
     "@types/node": "^22.10.2",
     "@types/pg": "^8.11.10",
     "@types/react": "^18.3.12",
