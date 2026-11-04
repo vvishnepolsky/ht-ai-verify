@@ -26,7 +26,8 @@ function npiWithCheckDigit(nine: string): string {
 }
 
 export const DEMO_NPIS = {
-  vishnepolsky: npiWithCheckDigit('199940006'),
+  /** Real NPPES record requested for the live-contact test provider (registry name differs — exercises the name-mismatch flag + fix path). */
+  vishnepolsky: '1699707463',
   vasquez: npiWithCheckDigit('199940017'),
   bell: npiWithCheckDigit('199940028'),
   harmony: npiWithCheckDigit('199940039'),
