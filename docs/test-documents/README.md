@@ -42,7 +42,6 @@ fabricated.
 | vv-photo-id-fail-expired.pdf | fail | Same license, expired 06/18/2023 → “no longer in effect”. |
 | vv-paystub-pass.pdf | pass | Walmart earnings statement for Vadim, pay period Oct 11–24, 2026. |
 | vv-paystub-fail-old.pdf | fail | Same statement from October 2024 → outside the last-30-days window. |
-| vv-paystub-allison-pass.pdf | pass | Kroger earnings statement for Allison Hackett, pay period Oct 11–24, 2026. |
 | vv-bank-statement-pass.pdf | pass | First Cumberland Bank statement for Vadim, Sept 25 – Oct 24, 2026. |
 | vv-lease-pass.pdf | pass | Current lease, April 2026 – March 2027, rent $950 — matches the application. |
 | vv-lease-fail-expired.pdf | fail | Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application. |

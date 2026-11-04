@@ -291,16 +291,6 @@
   },
   {
     "group": "household",
-    "task": "Pay stubs — Allison (Kroger)",
-    "expected": "pass",
-    "why": "Kroger earnings statement for Allison Hackett, pay period Oct 11–24, 2026.",
-    "files": [
-      "vv-paystub-allison-pass.pdf",
-      "vv-paystub-allison-pass.png"
-    ]
-  },
-  {
-    "group": "household",
     "task": "Bank statements (last 60 days)",
     "expected": "pass",
     "why": "First Cumberland Bank statement for Vadim, Sept 25 – Oct 24, 2026.",

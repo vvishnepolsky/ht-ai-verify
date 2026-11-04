@@ -41,14 +41,11 @@ export const DEMO_HOUSEHOLDS: HouseholdCase[] = [
     applied_at: '2026-11-02',
     primary_contact: { name: 'Vadim Vishnepolsky', phone: '(419) 902-4865', email: 'vadim.vishnepolsky@gmail.com' },
     address: { street: '2100 West End Ave, Apt 12', city: 'Nashville', state: 'TN', zip: '37203' },
-    members: [
-      { name: 'Vadim Vishnepolsky', dob: '1985-06-18', relationship: 'self', employers: [{ name: 'Walmart', monthly_gross: 1100 }] },
-      { name: 'Allison Hackett', dob: '1987-02-09', relationship: 'spouse', employers: [{ name: 'Kroger', monthly_gross: 450 }] },
-    ],
+    members: [{ name: 'Vadim Vishnepolsky', dob: '1985-06-18', relationship: 'self', employers: [{ name: 'Walmart', monthly_gross: 1100 }] }],
     housing: { type: 'rent', monthly_cost: 950, landlord: 'West End Property Management', utilities: ['electricity', 'natural gas'] },
     assets: { declared_total: 610, accounts: [{ institution: 'First Cumberland Bank', type: 'checking' }] },
     medical: { has_elderly_disabled: false, monthly_expenses: 0 },
-    notes: 'Test household for the live SMS path. Household of 2, both working.',
+    notes: 'Test household for the live SMS path. Single adult, working.',
   },
   {
     kind: 'household',

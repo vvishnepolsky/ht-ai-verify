@@ -121,14 +121,14 @@ function lease({ term, rent, signed, h = H }) {
   return page(
     'Residential Lease Agreement',
     `<header><div class="org">${h.landlord}</div><h1>Residential Lease Agreement</h1><div class="sub">${h.address}</div></header>
-    <p>This Residential Lease Agreement ("Agreement") is made between <b>${h.landlord}</b> ("Landlord"), ${h.landlordPhone}, and <b>${h.tenant}</b> and <b>${h.spouse}</b> ("Tenant"), for the premises located at <b>${h.address}</b> (the "Premises").${h.child ? ` Other occupants: ${h.child} (minor child).` : ''}</p>
+    <p>This Residential Lease Agreement ("Agreement") is made between <b>${h.landlord}</b> ("Landlord"), ${h.landlordPhone}, and <b>${h.tenant}</b>${h.spouse ? ` and <b>${h.spouse}</b>` : ''} ("Tenant"), for the premises located at <b>${h.address}</b> (the "Premises").${h.child ? ` Other occupants: ${h.child} (minor child).` : ''}</p>
     <div class="box"><div class="lbl">Lease term</div><div class="big">${term.start} through ${term.end}</div></div>
     <p><b>1. Rent.</b> Tenant agrees to pay Landlord monthly rent of <b>${money(rent)}</b>, due on the first day of each month, by check or electronic payment.</p>
     <p><b>2. Security deposit.</b> Tenant has deposited ${money(rent)} as a security deposit, held in accordance with Tennessee law.</p>
     <p><b>3. Utilities.</b> Water and sewer service are included in the monthly rent. Electricity and natural gas are the responsibility of the Tenant.</p>
     <p><b>4. Use.</b> The Premises shall be used solely as a private residence for the Tenant and the occupants named above.</p>
     <p><b>5. Renewal.</b> This Agreement does not renew automatically. Any renewal requires a new written agreement signed by both parties.</p>
-    <div class="sig"><div>${h.landlord}<br>Landlord · signed ${signed}</div><div>${h.tenant}<br>Tenant · signed ${signed}</div><div>${h.spouse}<br>Tenant · signed ${signed}</div></div>`,
+    <div class="sig"><div>${h.landlord}<br>Landlord · signed ${signed}</div><div>${h.tenant}<br>Tenant · signed ${signed}</div>${h.spouse ? `<div>${h.spouse}<br>Tenant · signed ${signed}</div>` : ''}</div>`,
   );
 }
 
@@ -278,7 +278,7 @@ add('provider', 'Tennessee medical license MD-48213', 'fail', 'The DEA certifica
 // --- Vadim Vishnepolsky — the live-contact test household (HH-2026-00402) and provider (PRV-2026-00071)
 const V = {
   tenant: 'Vadim Vishnepolsky',
-  spouse: 'Allison Hackett',
+  spouse: '',
   child: '',
   dob: '06/18/1985',
   address: '2100 West End Ave, Apt 12, Nashville, TN 37203',
@@ -291,7 +291,6 @@ add('household', 'Photo ID — Vadim Vishnepolsky', 'pass', 'Tennessee driver li
 add('household', 'Photo ID — Vadim Vishnepolsky', 'fail', 'Same license, expired 06/18/2023 → “no longer in effect”.', 'vv-photo-id-fail-expired', driverLicense({ name: V.tenant, dob: V.dob, issued: '06/18/2019', expires: '06/18/2023', number: '441209318' }).replace(H.address, V.address));
 add('household', 'Pay stubs — Vadim (Walmart)', 'pass', 'Walmart earnings statement for Vadim, pay period Oct 11–24, 2026.', 'vv-paystub-pass', payStub({ employee: V.tenant, employer: 'Walmart', periodStart: '10/11/2026', periodEnd: '10/24/2026', payDate: '10/30/2026', gross: 507.69, net: 441.2, address: V.address }));
 add('household', 'Pay stubs — Vadim (Walmart)', 'fail', 'Same statement from October 2024 → outside the last-30-days window.', 'vv-paystub-fail-old', payStub({ employee: V.tenant, employer: 'Walmart', periodStart: '10/13/2024', periodEnd: '10/26/2024', payDate: '11/01/2024', gross: 492.3, net: 428.1, address: V.address }));
-add('household', 'Pay stubs — Allison (Kroger)', 'pass', 'Kroger earnings statement for Allison Hackett, pay period Oct 11–24, 2026.', 'vv-paystub-allison-pass', payStub({ employee: V.spouse, employer: 'Kroger', periodStart: '10/11/2026', periodEnd: '10/24/2026', payDate: '10/30/2026', gross: 207.69, net: 184.5, address: V.address }));
 add('household', 'Bank statements (last 60 days)', 'pass', 'First Cumberland Bank statement for Vadim, Sept 25 – Oct 24, 2026.', 'vv-bank-statement-pass', bankStatement({ holder: V.tenant, periodStart: '09/25/2026', periodEnd: '10/24/2026', opening: 540.1, closing: 617.04, bank: H.bank }).replace(H.address, V.address));
 add('household', 'Lease agreement', 'pass', 'Current lease, April 2026 – March 2027, rent $950 — matches the application.', 'vv-lease-pass', lease({ term: { start: 'April 1, 2026', end: 'March 31, 2027' }, rent: 950, signed: 'March 15, 2026', h: V }));
 add('household', 'Lease agreement', 'fail', 'Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application.', 'vv-lease-fail-expired', lease({ term: { start: 'April 1, 2023', end: 'March 31, 2024' }, rent: 875, signed: 'March 15, 2023', h: V }));
