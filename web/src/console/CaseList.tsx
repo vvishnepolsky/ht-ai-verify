@@ -15,7 +15,11 @@ export function CaseList({ kind, config }: { kind: CaseKind; config: Config }) {
 
   const load = () => api<{ cases: CaseRecord[] }>(`/api/cases?kind=${kind}`).then((r) => setCases(r.cases));
   useEffect(() => {
+    // Drop the previous kind's rows before loading: rendering household rows
+    // through the provider branch (or vice versa) for a frame throws.
+    setCases(null);
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
   const filtered = (cases ?? []).filter((c) => {

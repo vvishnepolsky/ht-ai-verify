@@ -115,9 +115,9 @@ export function Console() {
           {detail ? (
             <CaseDetail id={detail[2] as string} config={config} />
           ) : section === 'households' ? (
-            <CaseList kind="household" config={config} />
+            <CaseList key="household" kind="household" config={config} />
           ) : section === 'providers' ? (
-            <CaseList kind="provider" config={config} />
+            <CaseList key="provider" kind="provider" config={config} />
           ) : (
             <Dashboard config={config} />
           )}
