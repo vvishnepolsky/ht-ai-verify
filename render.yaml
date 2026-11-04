@@ -15,7 +15,7 @@ databases:
     databaseName: ai_verify
     user: ai_verify
     region: oregon
-    plan: free # 1 GB, expires after ~30 days — fine for a demo; upgrade for anything longer
+    plan: basic_256mb # the workspace's one free Postgres is taken (care-coordinator); smallest paid tier
 
 services:
   - type: web
