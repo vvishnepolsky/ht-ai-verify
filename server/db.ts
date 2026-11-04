@@ -106,8 +106,23 @@ export const pgPool: pg.Pool | null = env.DATABASE_URL
 
 class PgStore implements Store {
   constructor(private pool: pg.Pool) {}
+  /**
+   * Boot waits for Postgres: on Render a freshly provisioned database (or one
+   * mid-restart) refuses connections for a minute or two, and crashing the
+   * process just turns that into a failed deploy. Retry for ~3 minutes.
+   */
   async init(): Promise<void> {
-    await this.pool.query(SCHEMA);
+    const deadline = Date.now() + 180_000;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await this.pool.query(SCHEMA);
+        return;
+      } catch (err) {
+        if (Date.now() > deadline) throw err;
+        console.warn(`[db] not ready (attempt ${attempt}): ${err instanceof Error ? err.message : String(err)} — retrying`);
+        await new Promise((r) => setTimeout(r, 5000));
+      }
+    }
   }
   async listCases(kind?: CaseKind): Promise<CaseRecord[]> {
     const { rows } = kind
