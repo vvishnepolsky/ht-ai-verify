@@ -1,0 +1,452 @@
+[
+  {
+    "group": "household",
+    "task": "Photo ID — Jordan Reyes",
+    "expected": "pass",
+    "why": "Tennessee driver license in Jordan Reyes’s name, expires 2029.",
+    "files": [
+      {
+        "name": "hh-photo-id-pass.pdf",
+        "url": "/test-documents/hh-photo-id-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-photo-id-pass.png",
+        "url": "/test-documents/hh-photo-id-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Photo ID — Jordan Reyes",
+    "expected": "fail",
+    "why": "Same license, expired 03/14/2024 → “no longer in effect”.",
+    "files": [
+      {
+        "name": "hh-photo-id-fail-expired.pdf",
+        "url": "/test-documents/hh-photo-id-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-photo-id-fail-expired.png",
+        "url": "/test-documents/hh-photo-id-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Photo ID — Jordan Reyes",
+    "expected": "fail",
+    "why": "Valid license, but for Sam Whitaker → “belongs to someone else”.",
+    "files": [
+      {
+        "name": "hh-photo-id-fail-wrong-person.pdf",
+        "url": "/test-documents/hh-photo-id-fail-wrong-person.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-photo-id-fail-wrong-person.png",
+        "url": "/test-documents/hh-photo-id-fail-wrong-person.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Pay stubs — Jordan (Walmart)",
+    "expected": "pass",
+    "why": "Walmart earnings statement for Jordan Reyes, pay period Oct 11–24, 2026 (biweekly ≈ $1,100/mo).",
+    "files": [
+      {
+        "name": "hh-paystub-pass.pdf",
+        "url": "/test-documents/hh-paystub-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-paystub-pass.png",
+        "url": "/test-documents/hh-paystub-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Pay stubs — Jordan (Walmart)",
+    "expected": "fail",
+    "why": "Same statement from October 2024 → outside the last-30-days window.",
+    "files": [
+      {
+        "name": "hh-paystub-fail-old.pdf",
+        "url": "/test-documents/hh-paystub-fail-old.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-paystub-fail-old.png",
+        "url": "/test-documents/hh-paystub-fail-old.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Pay stubs — Jordan (Walmart)",
+    "expected": "fail",
+    "why": "Current stub from Target, not Walmart → employer contradicts the application.",
+    "files": [
+      {
+        "name": "hh-paystub-fail-wrong-employer.pdf",
+        "url": "/test-documents/hh-paystub-fail-wrong-employer.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-paystub-fail-wrong-employer.png",
+        "url": "/test-documents/hh-paystub-fail-wrong-employer.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Bank statements (last 60 days)",
+    "expected": "pass",
+    "why": "First Cumberland Bank statement for Jordan Reyes, Sept 25 – Oct 24, 2026.",
+    "files": [
+      {
+        "name": "hh-bank-statement-pass.pdf",
+        "url": "/test-documents/hh-bank-statement-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-bank-statement-pass.png",
+        "url": "/test-documents/hh-bank-statement-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Bank statements (last 60 days)",
+    "expected": "fail",
+    "why": "Statement from spring 2025 → too old to show current resources.",
+    "files": [
+      {
+        "name": "hh-bank-statement-fail-old.pdf",
+        "url": "/test-documents/hh-bank-statement-fail-old.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-bank-statement-fail-old.png",
+        "url": "/test-documents/hh-bank-statement-fail-old.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Lease agreement",
+    "expected": "pass",
+    "why": "Current lease, April 2026 – March 2027, rent $950 — matches the application.",
+    "files": [
+      {
+        "name": "hh-lease-pass.pdf",
+        "url": "/test-documents/hh-lease-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-lease-pass.png",
+        "url": "/test-documents/hh-lease-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Lease agreement",
+    "expected": "fail",
+    "why": "Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application.",
+    "files": [
+      {
+        "name": "hh-lease-fail-expired.pdf",
+        "url": "/test-documents/hh-lease-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-lease-fail-expired.png",
+        "url": "/test-documents/hh-lease-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Lease agreement",
+    "expected": "fail",
+    "why": "A utility bill uploaded for the lease item → wrong document type.",
+    "files": [
+      {
+        "name": "hh-lease-fail-wrong-type.pdf",
+        "url": "/test-documents/hh-lease-fail-wrong-type.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-lease-fail-wrong-type.png",
+        "url": "/test-documents/hh-lease-fail-wrong-type.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Utility bill",
+    "expected": "pass",
+    "why": "October 2026 electric bill at the service address in Jordan’s name.",
+    "files": [
+      {
+        "name": "hh-utility-bill-pass.pdf",
+        "url": "/test-documents/hh-utility-bill-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "hh-utility-bill-pass.png",
+        "url": "/test-documents/hh-utility-bill-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Photo ID — Elena Vasquez",
+    "expected": "pass",
+    "why": "Tennessee driver license in Elena Vasquez’s name, expires 2028.",
+    "files": [
+      {
+        "name": "prv-photo-id-pass.pdf",
+        "url": "/test-documents/prv-photo-id-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-photo-id-pass.png",
+        "url": "/test-documents/prv-photo-id-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Photo ID — Elena Vasquez",
+    "expected": "fail",
+    "why": "Same license, expired 09/02/2023 → “no longer in effect”.",
+    "files": [
+      {
+        "name": "prv-photo-id-fail-expired.pdf",
+        "url": "/test-documents/prv-photo-id-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-photo-id-fail-expired.png",
+        "url": "/test-documents/prv-photo-id-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Tennessee medical license MD-48213",
+    "expected": "pass",
+    "why": "Active TN medical license MD-48213 for Elena Vasquez, valid through June 30, 2027.",
+    "files": [
+      {
+        "name": "prv-license-pass.pdf",
+        "url": "/test-documents/prv-license-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-license-pass.png",
+        "url": "/test-documents/prv-license-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Tennessee medical license MD-48213",
+    "expected": "fail",
+    "why": "Same license, but the term ended June 30, 2024 → lapsed.",
+    "files": [
+      {
+        "name": "prv-license-fail-expired.pdf",
+        "url": "/test-documents/prv-license-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-license-fail-expired.png",
+        "url": "/test-documents/prv-license-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Tennessee medical license MD-48213",
+    "expected": "fail",
+    "why": "Current license, but number MD-51902 for Daniel Okoro, MD → wrong licensee and number.",
+    "files": [
+      {
+        "name": "prv-license-fail-wrong-licensee.pdf",
+        "url": "/test-documents/prv-license-fail-wrong-licensee.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-license-fail-wrong-licensee.png",
+        "url": "/test-documents/prv-license-fail-wrong-licensee.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "DEA registration BV4821367",
+    "expected": "pass",
+    "why": "DEA certificate BV4821367 for Elena Vasquez, expires March 31, 2027.",
+    "files": [
+      {
+        "name": "prv-dea-pass.pdf",
+        "url": "/test-documents/prv-dea-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-dea-pass.png",
+        "url": "/test-documents/prv-dea-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "DEA registration BV4821367",
+    "expected": "fail",
+    "why": "Same certificate, expired March 31, 2025 → lapsed.",
+    "files": [
+      {
+        "name": "prv-dea-fail-expired.pdf",
+        "url": "/test-documents/prv-dea-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-dea-fail-expired.png",
+        "url": "/test-documents/prv-dea-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "ABIM board certification",
+    "expected": "pass",
+    "why": "ABIM Internal Medicine certificate 318842, valid through December 31, 2030.",
+    "files": [
+      {
+        "name": "prv-board-cert-pass.pdf",
+        "url": "/test-documents/prv-board-cert-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-board-cert-pass.png",
+        "url": "/test-documents/prv-board-cert-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "ABIM board certification",
+    "expected": "fail",
+    "why": "Same certificate, certification ended December 31, 2024 → lapsed.",
+    "files": [
+      {
+        "name": "prv-board-cert-fail-expired.pdf",
+        "url": "/test-documents/prv-board-cert-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-board-cert-fail-expired.png",
+        "url": "/test-documents/prv-board-cert-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Professional liability insurance",
+    "expected": "pass",
+    "why": "MedPro certificate for policy PL-7730415, in force Feb 1, 2026 – Jan 31, 2027.",
+    "files": [
+      {
+        "name": "prv-insurance-pass.pdf",
+        "url": "/test-documents/prv-insurance-pass.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-insurance-pass.png",
+        "url": "/test-documents/prv-insurance-pass.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Professional liability insurance",
+    "expected": "fail",
+    "why": "Policy expired January 31, 2025 → lapsed.",
+    "files": [
+      {
+        "name": "prv-insurance-fail-expired.pdf",
+        "url": "/test-documents/prv-insurance-fail-expired.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-insurance-fail-expired.png",
+        "url": "/test-documents/prv-insurance-fail-expired.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Professional liability insurance",
+    "expected": "fail",
+    "why": "Current certificate for policy PL-9910227 → policy number contradicts the application.",
+    "files": [
+      {
+        "name": "prv-insurance-fail-wrong-policy.pdf",
+        "url": "/test-documents/prv-insurance-fail-wrong-policy.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-insurance-fail-wrong-policy.png",
+        "url": "/test-documents/prv-insurance-fail-wrong-policy.png",
+        "mime": "image/png"
+      }
+    ]
+  },
+  {
+    "group": "provider",
+    "task": "Tennessee medical license MD-48213",
+    "expected": "fail",
+    "why": "The DEA certificate uploaded for the state-license item → wrong document type.",
+    "files": [
+      {
+        "name": "prv-license-fail-wrong-type.pdf",
+        "url": "/test-documents/prv-license-fail-wrong-type.pdf",
+        "mime": "application/pdf"
+      },
+      {
+        "name": "prv-license-fail-wrong-type.png",
+        "url": "/test-documents/prv-license-fail-wrong-type.png",
+        "mime": "image/png"
+      }
+    ]
+  }
+]

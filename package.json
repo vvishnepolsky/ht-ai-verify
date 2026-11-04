@@ -1,0 +1,35 @@
+{
+  "name": "ht-ai-verify",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Verify — verification collection + AI first-pass review for benefit households (SMS link) and Medicaid providers (email link), with a Hearth-styled worker console.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build": "npm run build:server && npm run build:web",
+    "build:server": "tsc -p tsconfig.json",
+    "build:web": "vite build --config web/vite.config.ts",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test-documents": "node scripts/generate-test-documents.mjs && bash scripts/render-test-documents.sh"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
+  }
+}
