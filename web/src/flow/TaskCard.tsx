@@ -65,7 +65,7 @@ export function TaskCard({
   task: VerificationTask;
   session: ApplicantView;
   onSession: (s: ApplicantView) => void;
-  onError: () => void;
+  onError: (err?: unknown) => void;
   highlighted: boolean;
 }) {
   const [busy, setBusy] = useState(false);
@@ -94,8 +94,8 @@ export function TaskCard({
       const data_base64 = await fileToBase64(file);
       const out = await post('attach-file', { task_id: task.id, mime: file.type || 'application/octet-stream', filename: file.name, source, data_base64 });
       onSession(out.session);
-    } catch {
-      onError();
+    } catch (err) {
+      onError(err);
     } finally {
       setBusy(false);
     }
@@ -144,9 +144,9 @@ export function TaskCard({
         tab.location.href = out.hosted_url;
         watchTab('clear', tab);
       } else window.location.assign(out.hosted_url);
-    } catch {
+    } catch (err) {
       tab?.close();
-      onError();
+      onError(err);
     } finally {
       setBusy(false);
     }
@@ -164,9 +164,9 @@ export function TaskCard({
         tab.location.href = out.link;
         watchTab('voa', tab);
       } else window.location.assign(out.link);
-    } catch {
+    } catch (err) {
       tab?.close();
-      onError();
+      onError(err);
     } finally {
       setBusy(false);
     }
@@ -208,7 +208,7 @@ export function TaskCard({
           setWaiting('income');
           void finalizeIncome()
             .then(onSession)
-            .catch(() => onError())
+            .catch((err: unknown) => onError(err))
             .finally(() => {
               setWaiting(null);
               setBusy(false);
@@ -218,14 +218,14 @@ export function TaskCard({
           if (!connected) setBusy(false);
         },
         onError: () => {
-          onError();
+          onError(new Error('argyle_link_error'));
           setBusy(false);
         },
       });
       argyle.open();
       return;
-    } catch {
-      onError();
+    } catch (err) {
+      onError(err);
     }
     setBusy(false);
   }
@@ -234,8 +234,8 @@ export function TaskCard({
     setBusy(true);
     try {
       onSession((await post('reset-task', { task_id: task.id })).session);
-    } catch {
-      onError();
+    } catch (err) {
+      onError(err);
     } finally {
       setBusy(false);
     }
@@ -244,8 +244,8 @@ export function TaskCard({
     setBusy(true);
     try {
       onSession((await post('remove-file', { task_id: task.id, file_id: fileId })).session);
-    } catch {
-      onError();
+    } catch (err) {
+      onError(err);
     } finally {
       setBusy(false);
     }

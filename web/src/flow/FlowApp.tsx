@@ -121,7 +121,7 @@ export function FlowApp() {
           </button>
         </div>
       )}
-      {phase === 'checklist' ? <Checklist base={base} session={session} onSession={onSession} /> : <Submitted session={session} />}
+      {phase === 'checklist' ? <Checklist base={base} session={session} onSession={onSession} onDeadLink={() => setPhase('invalid')} /> : <Submitted session={session} />}
     </Shell>
   );
 }
@@ -183,8 +183,15 @@ function groupTasks(tasks: VerificationTask[], kind: 'household' | 'provider'): 
   return groups;
 }
 
-function Checklist({ base, session, onSession }: { base: string; session: ApplicantView; onSession: (s: ApplicantView) => void }) {
+function Checklist({ base, session, onSession, onDeadLink }: { base: string; session: ApplicantView; onSession: (s: ApplicantView) => void; onDeadLink: () => void }) {
   const [error, setError] = useState<string | null>(null);
+  // A 404 mid-session means this link was replaced or expired (a newer one
+  // was sent, or the case was reset) — show the invalid-link screen, not a
+  // generic retry message the person can never get past.
+  const onActionError = (err?: unknown) => {
+    if (err instanceof ApiError && err.status === 404) onDeadLink();
+    else setError('Something went wrong. Please try again.');
+  };
   const [submitting, setSubmitting] = useState(false);
   const [warn, setWarn] = useState(false);
   const [highlight, setHighlight] = useState<Set<string>>(new Set());
@@ -209,8 +216,8 @@ function Checklist({ base, session, onSession }: { base: string; session: Applic
     setError(null);
     try {
       onSession((await api<{ session: ApplicantView }>(`${base}/submit`, { method: 'POST' })).session);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      onActionError(err);
     } finally {
       setSubmitting(false);
     }
@@ -261,7 +268,7 @@ function Checklist({ base, session, onSession }: { base: string; session: Applic
             </div>
           )}
           {g.tasks.map((t) => (
-            <TaskCard key={t.id} base={base} task={t} session={session} onSession={onSession} onError={() => setError('Something went wrong. Please try again.')} highlighted={highlight.has(t.id)} />
+            <TaskCard key={t.id} base={base} task={t} session={session} onSession={onSession} onError={onActionError} highlighted={highlight.has(t.id)} />
           ))}
         </section>
       ))}
