@@ -4,12 +4,12 @@ import { Glyph, I, go, useHashRoute } from './ui';
 import { Dashboard } from './Dashboard';
 import { CaseList } from './CaseList';
 import { CaseDetail } from './CaseDetail';
+import { DemoSettings } from './DemoSettings';
 
 export function Console() {
   const [config, setConfig] = useState<Config | null>(null);
   const [authed, setAuthed] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [seeding, setSeeding] = useState(false);
   const hash = useHashRoute();
 
   const checkAuth = useCallback(async () => {
@@ -47,18 +47,7 @@ export function Console() {
   }
 
   const detail = /^#\/(households|providers)\/([0-9a-f-]{36})$/i.exec(hash);
-  const section = hash.startsWith('#/households') ? 'households' : hash.startsWith('#/providers') ? 'providers' : 'dashboard';
-
-  const seedDemo = async () => {
-    setSeeding(true);
-    try {
-      await api('/api/demo/reset', { method: 'POST', body: { confirm: 'RESET' } });
-      go('#/');
-      window.location.reload();
-    } finally {
-      setSeeding(false);
-    }
-  };
+  const section = hash.startsWith('#/households') ? 'households' : hash.startsWith('#/providers') ? 'providers' : hash.startsWith('#/demo') ? 'demo' : 'dashboard';
 
   return (
     <div className="shell">
@@ -69,18 +58,6 @@ export function Console() {
           <span className="brand-role">AI Verify · Worker console</span>
         </a>
         <div className="right">
-          {config.demoSeed && (
-            <button
-              type="button"
-              className="btn-ink"
-              disabled={seeding}
-              onClick={() => {
-                if (window.confirm('Reset all cases to the synthetic demo set? Every current case and upload is deleted.')) void seedDemo();
-              }}
-            >
-              {seeding ? 'Resetting…' : 'Reset demo data'}
-            </button>
-          )}
           <span className="who">Eligibility & enrollment</span>
           {config.authRequired && (
             <button
@@ -109,6 +86,10 @@ export function Console() {
             <a className={`nav-link${section === 'providers' ? ' active' : ''}`} href="#/providers">
               <I.Stetho /> Medicaid providers
             </a>
+            <div className="nav-group">Settings</div>
+            <a className={`nav-link${section === 'demo' ? ' active' : ''}`} href="#/demo">
+              <I.Docs /> Demo settings
+            </a>
           </nav>
         </aside>
         <main className="content">
@@ -118,6 +99,8 @@ export function Console() {
             <CaseList key="household" kind="household" config={config} />
           ) : section === 'providers' ? (
             <CaseList key="provider" kind="provider" config={config} />
+          ) : section === 'demo' ? (
+            <DemoSettings config={config} />
           ) : (
             <Dashboard config={config} />
           )}
