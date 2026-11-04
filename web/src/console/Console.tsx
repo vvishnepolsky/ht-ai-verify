@@ -110,33 +110,6 @@ export function Console() {
               <I.Stetho /> Medicaid providers
             </a>
           </nav>
-          <div className="foot">
-            <strong>Integrations</strong>
-            <div className="int">
-              <span>AI review</span>
-              <b>{config.integrations.ai}</b>
-            </div>
-            <div className="int">
-              <span>SMS</span>
-              <b>{config.integrations.sms}</b>
-            </div>
-            <div className="int">
-              <span>Email</span>
-              <b>{config.integrations.email}</b>
-            </div>
-            <div className="int">
-              <span>CLEAR</span>
-              <b>{config.integrations.clear}</b>
-            </div>
-            <div className="int">
-              <span>Argyle</span>
-              <b>{config.integrations.argyle}</b>
-            </div>
-            <div className="int">
-              <span>NPI Registry</span>
-              <b>{config.integrations.nppes}</b>
-            </div>
-          </div>
         </aside>
         <main className="content">
           {detail ? (
