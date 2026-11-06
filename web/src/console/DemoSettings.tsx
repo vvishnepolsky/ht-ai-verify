@@ -31,6 +31,7 @@ export function DemoSettings({ config }: { config: Config }) {
     ['SMS (household links)', config.integrations.sms],
     ['Email (provider links)', config.integrations.email],
     ['CLEAR identity', config.integrations.clear],
+    ['CLEAR coverage discovery (demo overlay)', config.clearDemoCoverage ? config.clearDemoCoverage.summary : 'off'],
     ['Argyle payroll & bank', config.integrations.argyle],
     ['CMS NPI Registry', config.integrations.nppes],
   ];

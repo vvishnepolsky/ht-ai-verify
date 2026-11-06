@@ -101,6 +101,24 @@ export interface UploadedFileMeta {
   ocr?: OcrResult;
   ocr_pending?: boolean;
 }
+export interface HealthCoverage {
+  payer_id: string | null;
+  payer_name: string;
+  plan_status: string;
+  member_id: string | null;
+  group_id?: string | null;
+  policy_holder: string | null;
+  policy_holder_relationship?: string | null;
+  coverage_start_date?: string | null;
+  coverage_type: string | null;
+  coverage_state: string | null;
+  coverage_state_name: string | null;
+  is_medicaid: boolean;
+  is_active: boolean;
+  out_of_state: boolean;
+  source: 'clear' | 'demo';
+}
+export type CoverageFinding = 'oos_medicaid' | 'in_state_medicaid' | 'third_party' | 'inactive' | null;
 export interface IdentityVerification {
   provider: 'clear';
   mode: Mode;
@@ -108,8 +126,9 @@ export interface IdentityVerification {
   document_type: string;
   issuing_state: string;
   expiration_date: string | null;
-  health_coverage: { payer_name: string; plan_status: string; member_id: string | null; policy_holder: string | null; is_medicaid: boolean; out_of_state: boolean } | null;
+  health_coverage: HealthCoverage | null;
   coverage_flag: string | null;
+  coverage_finding?: CoverageFinding;
   requested_name?: string;
   name_match?: boolean;
   verified_at: string;
@@ -166,6 +185,9 @@ export interface VerificationTask {
   expected_employers?: string[];
   files: UploadedFileMeta[];
   reviewer_note?: string;
+  /** Set when a worker added this item during review. */
+  added_by?: 'worker';
+  added_at?: string;
   identity_verification?: IdentityVerification;
   income_verification?: IncomeVerification;
   assets_verification?: AssetsVerification;
@@ -290,8 +312,105 @@ export interface Config {
   stateCode: string;
   publicUrl: string;
   integrations: { ai: string; sms: string; email: string; clear: string; argyle: string; nppes: string };
+  clearDemoCoverage: { scenario: string; summary: string } | null;
   demoSeed: boolean;
 }
+
+/** A verification item the worker adds during review (mirrors the server's NewTaskDraft). */
+export interface NewTaskDraft {
+  category: TaskCategory;
+  title: string;
+  reason: string;
+  subject?: string;
+  required?: boolean;
+  methods?: TaskMethod[];
+}
+export function allowedMethodsFor(category: TaskCategory): TaskMethod[] {
+  switch (category) {
+    case 'identity':
+      return ['upload', 'clear'];
+    case 'income':
+    case 'assets':
+      return ['upload', 'argyle'];
+    default:
+      return ['upload'];
+  }
+}
+export interface AddTaskPreset {
+  key: string;
+  label: string;
+  category: TaskCategory;
+  title: string;
+  reason: string;
+}
+/** Common things a worker asks for after review. The worker can edit every field or start blank. */
+export const HOUSEHOLD_PRESETS: AddTaskPreset[] = [
+  {
+    key: 'residency',
+    label: 'Proof of residency',
+    category: 'residency_housing',
+    title: 'Proof of where you live',
+    reason: 'We need a document dated in the last 60 days that shows your name and your current home address in this state — for example a utility bill, a lease, a bank statement, or a letter from a government agency.',
+  },
+  {
+    key: 'coverage_ended',
+    label: 'Proof other coverage ended',
+    category: 'insurance',
+    title: 'Proof your other health coverage has ended',
+    reason: 'Our records show health coverage in another state. Please send a termination or disenrollment letter from that program, or a notice showing the end date of that coverage.',
+  },
+  {
+    key: 'citizenship',
+    label: 'Citizenship or immigration status',
+    category: 'identity',
+    title: 'Proof of citizenship or immigration status',
+    reason: 'Please send a U.S. passport, birth certificate, naturalization certificate, permanent resident card, or another immigration document for this person.',
+  },
+  {
+    key: 'income',
+    label: 'Additional income proof',
+    category: 'income',
+    title: 'Additional proof of income',
+    reason: 'Please send your most recent pay stubs covering the last 30 days, or a letter from your employer showing your pay and hours.',
+  },
+  {
+    key: 'childcare',
+    label: 'Child care expenses',
+    category: 'expenses_deductions',
+    title: 'Proof of child care expenses',
+    reason: 'Please send a statement or receipt from your child care provider showing what you pay each month.',
+  },
+];
+export const PROVIDER_PRESETS: AddTaskPreset[] = [
+  {
+    key: 'license',
+    label: 'State license',
+    category: 'license',
+    title: 'Current state license',
+    reason: 'Please upload the current license certificate or a verification printout from the state licensing board showing the license number, status, and expiration date.',
+  },
+  {
+    key: 'malpractice',
+    label: 'Liability insurance',
+    category: 'insurance',
+    title: 'Professional liability insurance certificate',
+    reason: 'Please upload the current certificate of insurance showing the insured name, policy number, coverage limits, and the policy period.',
+  },
+  {
+    key: 'board',
+    label: 'Board certification',
+    category: 'credential',
+    title: 'Board certification',
+    reason: 'Please upload the current board certification or a verification printout from the certifying board.',
+  },
+  {
+    key: 'w9',
+    label: 'IRS Form W-9',
+    category: 'credential',
+    title: 'Signed IRS Form W-9',
+    reason: 'Please upload a signed W-9 for the billing entity so payments can be set up.',
+  },
+];
 export interface Delivery {
   sms: boolean;
   email: boolean;

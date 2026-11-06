@@ -309,6 +309,8 @@ function eventLabel(type: string, detail: string | undefined, r: VerificationReq
       return `Approved${t}`;
     case 'task_rejected':
       return `Rejected${t}`;
+    case 'task_added':
+      return `Added a verification item during review${t}`;
     case 'task_evidence_cleared':
       return `Evidence removed, item requested again${t}`;
     case 'returned':

@@ -80,6 +80,29 @@ export const env = {
    * Must stay off anywhere real: it would mask a genuine mismatch.
    */
   CLEAR_DEMO_NAME_MATCH: bool('CLEAR_DEMO_NAME_MATCH', false),
+  /**
+   * DEMO ONLY — what CLEAR's coverage discovery "finds" for a household's
+   * identity check. CLEAR's sandbox never returns health coverage, so (as in
+   * the State-X / Georgia CLEAR demos' DEMO_COVERAGE_SCENARIO) a deterministic
+   * coverage record is overlaid on the verified identity:
+   *   off            → whatever CLEAR actually returned (nothing in sandbox/simulation)
+   *   medicaid       → active Medicaid with CLEAR_DEMO_COVERAGE_STATE's program
+   *                    (out of state relative to STATE_CODE → duplicate-enrollment flag)
+   *   employer_plan  → an active employer plan held by a spouse (third-party liability note only)
+   * Must stay off anywhere real: it would invent coverage that does not exist.
+   */
+  CLEAR_DEMO_COVERAGE: ((): 'off' | 'medicaid' | 'employer_plan' => {
+    const raw = (process.env.CLEAR_DEMO_COVERAGE ?? '').trim().toLowerCase();
+    if (raw === 'medicaid' || raw === 'oos_medicaid') return 'medicaid';
+    if (raw === 'employer_plan' || raw === 'employer') return 'employer_plan';
+    return 'off';
+  })(),
+  /** State whose Medicaid program the demo coverage belongs to (two-letter code). */
+  CLEAR_DEMO_COVERAGE_STATE: (process.env.CLEAR_DEMO_COVERAGE_STATE || 'NY').toUpperCase().slice(0, 2),
+  CLEAR_DEMO_COVERAGE_STATUS: (process.env.CLEAR_DEMO_COVERAGE_STATUS || 'ACTIVE').toUpperCase(),
+  CLEAR_DEMO_COVERAGE_MEMBER_ID: process.env.CLEAR_DEMO_COVERAGE_MEMBER_ID || 'NY48213579',
+  /** ISO date the demo coverage started. */
+  CLEAR_DEMO_COVERAGE_START: process.env.CLEAR_DEMO_COVERAGE_START || '2025-11-01',
 
   // --- Argyle (payroll income via Link; bank assets via a hosted VOA session) ---
   ARGYLE_API_BASE: process.env.ARGYLE_API_BASE || 'https://api-sandbox.argyle.com/v2',
@@ -101,6 +124,9 @@ export function isEmailConfigured(): boolean {
 }
 export function isClearLive(): boolean {
   return env.CLEAR_MODE !== 'stub' && Boolean(env.CLEAR_API_KEY && env.CLEAR_PROJECT_ID);
+}
+export function isClearDemoCoverageOn(): boolean {
+  return env.CLEAR_DEMO_COVERAGE !== 'off';
 }
 export function isArgyleLive(): boolean {
   return Boolean(env.ARGYLE_API_KEY_ID && env.ARGYLE_API_KEY_SECRET);

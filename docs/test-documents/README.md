@@ -46,6 +46,9 @@ fabricated.
 | vv-lease-pass.pdf | pass | Current lease, April 2026 – March 2027, rent $950 — matches the application. |
 | vv-lease-fail-expired.pdf | fail | Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application. |
 | vv-utility-bill-pass.pdf | pass | October 2026 electric bill at the service address in Vadim’s name. |
+| vv-residency-pass.pdf | pass | Reuse vv-utility-bill-pass: current bill at the Tennessee address in Vadim’s name. |
+| vv-residency-fail-out-of-state.pdf | fail | Current Con Edison bill in Vadim’s name at a New York service address → contradicts the Tennessee address / state on the application. |
+| vv-residency-fail-old.pdf | fail | Bill at the Tennessee address but dated March 2025 → older than 60 days, no longer shows where they live now. |
 | vvp-photo-id-pass.pdf | pass | Tennessee driver license in Vadim Vishnepolsky’s name, expires 2028. |
 | vvp-license-pass.pdf | pass | Active TN medical license MD-50117 for Vadim Vishnepolsky, MD, valid through July 31, 2027. |
 | vvp-license-fail-expired.pdf | fail | Same license, but the term ended July 31, 2024 → lapsed. |

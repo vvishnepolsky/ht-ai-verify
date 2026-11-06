@@ -76,6 +76,11 @@ services:
       # DEMO ONLY — CLEAR's sandbox returns its own test identity; present the requested name. Never on a real deployment.
       - key: CLEAR_DEMO_NAME_MATCH
         value: 'true'
+      # DEMO ONLY — coverage CLEAR "discovers" for households: active New York Medicaid (out of state for TN). Never on a real deployment.
+      - key: CLEAR_DEMO_COVERAGE
+        value: 'medicaid'
+      - key: CLEAR_DEMO_COVERAGE_STATE
+        value: 'NY'
       # --- Argyle payroll/bank: sandbox creds, or unset → labelled simulation ---
       - key: ARGYLE_API_BASE
         value: 'https://api-sandbox.argyle.com/v2'

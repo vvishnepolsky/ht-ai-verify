@@ -25,7 +25,9 @@ import { env, isArgyleLive, isClearLive, isEmailConfigured, isOpenAiConfigured, 
 import { store } from '../db.js';
 import { readJsonBody, sendBytes, sendError, sendJson } from '../http-utils.js';
 import { displayName, isHousehold, isProvider, type CaseData, type CaseRecord } from '../domain/case.js';
-import type { ReviewAction } from '../domain/lifecycle.js';
+import { TASK_CATEGORIES, type ReviewAction } from '../domain/lifecycle.js';
+import type { TaskCategory, TaskMethod } from '../domain/types.js';
+import { describeDemoCoverage } from '../integrations/clear.js';
 import { isValidNpiFormat, lookupNpi, searchNpi, summarizeRecord } from '../integrations/npi.js';
 import { ServiceError, verificationService as svc } from '../services/verification.service.js';
 import { seedDemoData } from '../demo/seed.js';
@@ -72,6 +74,8 @@ export async function handleAdminApi(req: IncomingMessage, res: ServerResponse, 
         argyle: isArgyleLive() ? (env.ARGYLE_API_BASE.includes('sandbox') ? 'sandbox' : 'live') : 'simulated',
         nppes: 'live',
       },
+      /** DEMO ONLY — the coverage CLEAR's identity check reports for households (null when off). */
+      clearDemoCoverage: describeDemoCoverage(env.STATE_CODE),
       demoSeed: env.ENABLE_DEMO_SEED,
     });
     return true;
@@ -259,6 +263,24 @@ function parseReviewAction(body: Record<string, unknown>): ReviewAction {
     case 'reject_task':
       if (!task_id) throw new ServiceError(400, 'task_id_required');
       return { type, task_id, reason };
+    case 'add_task': {
+      const t = (body['task'] ?? {}) as Record<string, unknown>;
+      const s = (v: unknown) => (typeof v === 'string' ? v : '');
+      const category = s(t['category']) as TaskCategory;
+      if (!TASK_CATEGORIES.includes(category)) throw new ServiceError(400, 'invalid_category');
+      const methods = Array.isArray(t['methods']) ? (t['methods'].filter((m) => typeof m === 'string') as TaskMethod[]) : undefined;
+      return {
+        type,
+        task: {
+          category,
+          title: s(t['title']),
+          reason: s(t['reason']),
+          subject: s(t['subject']) || undefined,
+          required: t['required'] !== false,
+          methods,
+        },
+      };
+    }
     default:
       throw new ServiceError(400, 'unknown_action');
   }

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { api, ApiError, CATEGORY_LABELS, TASK_STATUS_LABELS, taskTone, type ApplicantView, type UploadedFileMeta, type VerificationTask } from '../api';
 import { money } from '../format';
-import { I, Pill } from '../console/ui';
+import { Chip, I, Pill } from '../console/ui';
 import { CameraCapture } from './CameraCapture';
 
 declare global {
@@ -260,6 +260,11 @@ export function TaskCard({
           <div>
             <span className="title">{task.title}</span>
             {!task.required && <span className="req">Optional</span>}
+            {task.added_by === 'worker' && task.status === 'needed' && (
+              <span style={{ marginLeft: 8 }}>
+                <Chip tone="info">New request</Chip>
+              </span>
+            )}
           </div>
           <div className="meta">{CATEGORY_LABELS[task.category]}</div>
         </div>
@@ -280,6 +285,7 @@ export function TaskCard({
             warn={task.identity_verification.name_match === false ? `The verified name (${task.identity_verification.full_name}) may not match ${task.subject ?? 'the requested person'}.` : null}
           />
         )}
+        {!provider && task.identity_verification?.health_coverage && <CoverageNotice v={task.identity_verification} />}
         {task.income_verification && (
           <Banner
             title={`Income verified with Argyle${task.income_verification.mode === 'simulated' ? ' (simulated)' : ''}`}
@@ -406,6 +412,40 @@ export function TaskCard({
           }}
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * What the household sees when CLEAR's identity check also found health
+ * coverage. Plain language, no decision: the caseworker decides what (if
+ * anything) to ask for next.
+ */
+function CoverageNotice({ v }: { v: NonNullable<VerificationTask['identity_verification']> }) {
+  const c = v.health_coverage;
+  if (!c || v.coverage_finding === 'inactive' || !v.coverage_finding) return null;
+  const member = c.member_id ? ` (Member ID ${c.member_id})` : '';
+  if (v.coverage_finding === 'oos_medicaid') {
+    const other = c.coverage_state_name ?? 'another state';
+    return (
+      <div className="alert warning small" role="status">
+        <b>We found active Medicaid coverage in {other}.</b> Our records show coverage with {c.payer_name}
+        {member}. Your caseworker may ask for more information before a decision is made — for example, proof of where you live now or proof that the {other} coverage has ended. You can still submit your documents.
+      </div>
+    );
+  }
+  if (v.coverage_finding === 'in_state_medicaid') {
+    return (
+      <div className="alert info small" role="status">
+        <b>We found Medicaid coverage already on file</b> with {c.payer_name}
+        {member}. Your caseworker will check it against your application.
+      </div>
+    );
+  }
+  return (
+    <div className="alert info small" role="status">
+      <b>We found other health coverage.</b> Our records show an active plan with {c.payer_name}
+      {c.policy_holder ? ` held by ${c.policy_holder}${c.policy_holder_relationship ? ` (${c.policy_holder_relationship})` : ''}` : ''}. Your caseworker will note it on your case; nothing else is needed from you for this item.
     </div>
   );
 }

@@ -17,10 +17,12 @@ import {
   TASK_STATUS_LABELS,
   taskTone,
   type Delivery,
+  type NewTaskDraft,
   type UploadedFileMeta,
   type VerificationRequest,
   type VerificationTask,
 } from '../api';
+import { AddTaskDialog } from './AddTaskDialog';
 import { formatDate, formatDateTime, initials, money } from '../format';
 import { Chip, CopyBox, Dialog, I, ModeTag, Pill } from './ui';
 import { AuthImage, openAuthedFile, useAuthedFile } from './AuthFile';
@@ -58,6 +60,7 @@ export function ReviewPanel({
   const [busy, setBusy] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<VerificationTask | null>(null);
   const [clearTarget, setClearTarget] = useState<VerificationTask | null>(null);
+  const [addTask, setAddTask] = useState<{ preset?: string } | null>(null);
   const [notice, setNotice] = useState<Delivery | null>(null);
 
   async function review(body: Record<string, unknown>) {
@@ -79,6 +82,8 @@ export function ReviewPanel({
   const reviewing = s === 'under_review';
   const anyRejected = request.tasks.some((t) => t.status === 'rejected');
   const cleared = request.tasks.some((t) => t.status === 'needed' && request.events.some((e) => e.type === 'task_evidence_cleared' && e.detail === t.id));
+  const added = request.tasks.some((t) => t.added_by === 'worker' && t.status === 'needed');
+  const canReturn = anyRejected || cleared || added;
   const allApproved = request.tasks.every((t) => !t.required || t.status === 'approved');
   const groups = groupTasks(request.tasks, request.kind);
   const flagged = request.tasks.reduce((n, t) => n + t.files.filter((f) => f.ocr?.verdict === 'review').length + (t.npi_verification && t.npi_verification.flags.length > 0 ? 1 : 0), 0);
@@ -98,6 +103,11 @@ export function ReviewPanel({
           </div>
           <div className="actions">
             <Pill tone={requestTone(s)}>{REQUEST_STATUS_LABELS[s]}</Pill>
+            {s !== 'verified' && (
+              <button type="button" className="btn outline sm" disabled={busy} onClick={() => setAddTask({})}>
+                <I.Plus /> Add a verification
+              </button>
+            )}
             {canStart && (
               <button type="button" className="btn primary sm" disabled={busy} onClick={() => void review({ action: 'start_review' })}>
                 Start review
@@ -105,7 +115,7 @@ export function ReviewPanel({
             )}
             {reviewing && (
               <>
-                <button type="button" className="btn outline sm" disabled={busy || (!anyRejected && !cleared)} title={!anyRejected && !cleared ? 'Reject at least one item with a note first' : undefined} onClick={() => void review({ action: 'return' })}>
+                <button type="button" className="btn outline sm" disabled={busy || !canReturn} title={!canReturn ? 'Reject an item with a note, or add a verification, first' : undefined} onClick={() => void review({ action: 'return' })}>
                   <I.Send /> Return for corrections
                 </button>
                 <button type="button" className="btn primary sm" disabled={busy || anyRejected || !allApproved} title={!allApproved ? 'Approve every required item first' : undefined} onClick={() => void review({ action: 'verify' })}>
@@ -120,7 +130,8 @@ export function ReviewPanel({
             Waiting on the {request.kind === 'household' ? 'household' : 'provider'} — items appear here as they are provided; review opens once they submit.
           </div>
         )}
-        {s === 'returned' && <div className="card-body muted small">Returned for corrections. A new secure link was sent; the rejected items show the notes they will see.</div>}
+        {s === 'returned' && <div className="card-body muted small">Returned for corrections. A new secure link was sent; the rejected items show the notes they will see{added ? ', and the items you added are on their checklist as Needed' : ''}.</div>}
+        {reviewing && added && <div className="card-body muted small">You added {request.tasks.filter((t) => t.added_by === 'worker' && t.status === 'needed').length} new item{request.tasks.filter((t) => t.added_by === 'worker' && t.status === 'needed').length === 1 ? '' : 's'}. Use Return for corrections to send them a new link with the request.</div>}
         {s === 'verified' && <div className="card-body muted small">Verified {formatDateTime(request.verified_at)}. This request is closed.</div>}
       </div>
 
@@ -168,6 +179,7 @@ export function ReviewPanel({
               onApprove={() => void review({ action: 'approve_task', task_id: t.id })}
               onReject={() => setRejectTarget(t)}
               onClear={() => setClearTarget(t)}
+              onAddTask={(preset) => setAddTask({ preset })}
               onRequestChange={(r) => onChange(r)}
               onRecheckNpi={async () => {
                 setBusy(true);
@@ -185,6 +197,17 @@ export function ReviewPanel({
         </section>
       ))}
 
+      {addTask && (
+        <AddTaskDialog
+          request={request}
+          initialPreset={addTask.preset}
+          onClose={() => setAddTask(null)}
+          onSubmit={async (draft: NewTaskDraft) => {
+            await review({ action: 'add_task', task: draft });
+            setAddTask(null);
+          }}
+        />
+      )}
       {rejectTarget && (
         <RejectDialog
           task={rejectTarget}
@@ -222,7 +245,9 @@ export function ReviewPanel({
 function humanize(code: string): string {
   const map: Record<string, string> = {
     invalid_status: 'That action is not available in the current status.',
-    no_rejected_tasks: 'Reject at least one item (with a note) before returning.',
+    no_rejected_tasks: 'Reject an item with a note, or add a verification, before returning.',
+    title_required: 'Give the item a title.',
+    invalid_category: 'Pick a type for the item.',
     missing_reviewer_note: 'Every rejected item needs a note for the applicant.',
     has_rejected_tasks: 'Resolve the rejected items before marking verified.',
     incomplete_review: 'Approve every required item before marking verified.',
@@ -245,6 +270,7 @@ function TaskReviewCard({
   onReject,
   onClear,
   onRecheckNpi,
+  onAddTask,
   onRequestChange,
 }: {
   request: VerificationRequest;
@@ -255,6 +281,7 @@ function TaskReviewCard({
   onReject: () => void;
   onClear: () => void;
   onRecheckNpi: () => void;
+  onAddTask: (preset?: string) => void;
   onRequestChange: (r: VerificationRequest) => void;
 }) {
   const isNpi = task.category === 'npi';
@@ -270,6 +297,7 @@ function TaskReviewCard({
           </div>
           <div className="meta">
             {CATEGORY_LABELS[task.category]} · {METHOD_LABELS[task.method]}
+            {task.added_by === 'worker' && <> · added during review{task.added_at ? ` ${formatDateTime(task.added_at)}` : ''}</>}
           </div>
         </div>
         <Pill tone={taskTone(task.status)}>{TASK_STATUS_LABELS[task.status]}</Pill>
@@ -286,7 +314,7 @@ function TaskReviewCard({
           </div>
         )}
         {task.files.length > 0 && <FileList request={request} task={task} />}
-        {task.identity_verification && <IdentityPanel v={task.identity_verification} />}
+        {task.identity_verification && <IdentityPanel v={task.identity_verification} kind={request.kind} canAct={request.status !== 'verified'} onAddTask={onAddTask} />}
         {task.income_verification && <IncomePanel v={task.income_verification} />}
         {task.assets_verification && <AssetsPanel v={task.assets_verification} />}
         {task.npi_verification && <NpiPanel v={task.npi_verification} />}
@@ -448,7 +476,17 @@ function FileViewer({ requestId, file, onClose }: { requestId: string; file: Upl
   );
 }
 
-function IdentityPanel({ v }: { v: NonNullable<VerificationTask['identity_verification']> }) {
+function IdentityPanel({
+  v,
+  kind,
+  canAct,
+  onAddTask,
+}: {
+  v: NonNullable<VerificationTask['identity_verification']>;
+  kind: 'household' | 'provider';
+  canAct: boolean;
+  onAddTask: (preset?: string) => void;
+}) {
   return (
     <div className="panel">
       <PanelHead icon={<I.Id />} label="CLEAR identity" right={<ModeTag mode={v.mode} />} />
@@ -479,12 +517,102 @@ function IdentityPanel({ v }: { v: NonNullable<VerificationTask['identity_verifi
           <I.Check /> Name matches the requested person.
         </div>
       )}
-      {v.coverage_flag && (
-        <div className="alert warning small">
-          <b>Health coverage check:</b> {v.coverage_flag}
+      {v.mode === 'simulated' && <p className="small muted">Simulated result — CLEAR is not configured on this deployment.</p>}
+      {v.health_coverage && <CoveragePanel v={v} kind={kind} canAct={canAct} onAddTask={onAddTask} />}
+    </div>
+  );
+}
+
+/**
+ * Health coverage CLEAR discovered alongside the identity check — the
+ * duplicate-enrollment / third-party-liability finding, with the facts and a
+ * shortcut to ask the household for what the worker decides is needed.
+ */
+function CoveragePanel({
+  v,
+  kind,
+  canAct,
+  onAddTask,
+}: {
+  v: NonNullable<VerificationTask['identity_verification']>;
+  kind: 'household' | 'provider';
+  canAct: boolean;
+  onAddTask: (preset?: string) => void;
+}) {
+  const c = v.health_coverage;
+  if (!c) return null;
+  const finding = v.coverage_finding ?? null;
+  const tone = finding === 'oos_medicaid' ? 'warning' : finding === 'inactive' || finding === null ? 'neutral' : 'info';
+  const headline =
+    finding === 'oos_medicaid'
+      ? `Active Medicaid in ${c.coverage_state_name ?? 'another state'} — possible duplicate enrollment`
+      : finding === 'in_state_medicaid'
+        ? 'Medicaid coverage already on file'
+        : finding === 'third_party'
+          ? 'Other health coverage (third-party liability)'
+          : finding === 'inactive'
+            ? 'Coverage found, not active'
+            : 'Coverage found';
+  return (
+    <div className="panel" style={{ marginTop: 8 }}>
+      <PanelHead icon={<I.Shield />} label="Health coverage found by CLEAR" right={c.source === 'demo' ? <Chip tone="warning">Demo overlay</Chip> : <ModeTag mode={v.mode} />} />
+      <div className={`alert ${tone === 'warning' ? 'warning' : tone === 'info' ? 'info' : 'success'} small`}>
+        <b>{headline}.</b> {v.coverage_flag}
+      </div>
+      <dl className="grid">
+        <div>
+          <dt>Payer</dt>
+          <dd>{c.payer_name}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{c.plan_status}</dd>
+        </div>
+        <div>
+          <dt>Member ID</dt>
+          <dd>{c.member_id ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Coverage type</dt>
+          <dd>{c.coverage_type ? c.coverage_type.charAt(0).toUpperCase() + c.coverage_type.slice(1) : '—'}</dd>
+        </div>
+        <div>
+          <dt>State</dt>
+          <dd>{c.coverage_state_name ?? c.coverage_state ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Policy holder</dt>
+          <dd>
+            {c.policy_holder ?? '—'}
+            {c.policy_holder_relationship ? <span className="muted"> ({c.policy_holder_relationship})</span> : null}
+          </dd>
+        </div>
+        <div>
+          <dt>Coverage since</dt>
+          <dd>{c.coverage_start_date ? formatDate(c.coverage_start_date) : '—'}</dd>
+        </div>
+        {c.group_id && (
+          <div>
+            <dt>Group</dt>
+            <dd>{c.group_id}</dd>
+          </div>
+        )}
+      </dl>
+      {kind === 'household' && canAct && (finding === 'oos_medicaid' || finding === 'in_state_medicaid') && (
+        <div className="review-actions">
+          <span className="muted small">You decide what to ask for:</span>
+          <button type="button" className="btn outline sm" onClick={() => onAddTask('residency')}>
+            <I.Plus /> Request proof of residency
+          </button>
+          <button type="button" className="btn outline sm" onClick={() => onAddTask('coverage_ended')}>
+            <I.Plus /> Request proof coverage ended
+          </button>
+          <button type="button" className="btn ghost sm" onClick={() => onAddTask()}>
+            Something else…
+          </button>
         </div>
       )}
-      {v.mode === 'simulated' && <p className="small muted">Simulated result — CLEAR is not configured on this deployment.</p>}
+      {c.source === 'demo' && <p className="small muted">Demo overlay (CLEAR_DEMO_COVERAGE) — CLEAR's sandbox does not return coverage, so this record is supplied by configuration.</p>}
     </div>
   );
 }

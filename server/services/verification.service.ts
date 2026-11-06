@@ -23,10 +23,35 @@ import {
   rotateReturnedLink,
   type ActionResult,
   type ApplicantAction,
+  type NewTaskDraft,
   type ReviewAction,
 } from '../domain/lifecycle.js';
 import { hashToken, mintToken, tokenExpiry } from '../domain/token.js';
-import type { ApplicantView, UploadedFileMeta, VerificationRequest, VerificationTask } from '../domain/types.js';
+import type { ApplicantView, DeclaredFact, UploadedFileMeta, VerificationRequest, VerificationTask } from '../domain/types.js';
+import { stateName } from '../integrations/clear.js';
+
+/**
+ * Facts from the case the AI review should check a worker-added document
+ * against: the person's name, and for residency items the address on file
+ * and the agency's state.
+ */
+function declaredFactsForAddedTask(c: CaseRecord, draft: NewTaskDraft): DeclaredFact[] {
+  const facts: DeclaredFact[] = [...(draft.declared ?? [])];
+  const has = (label: string) => facts.some((f) => f.label.toLowerCase() === label.toLowerCase());
+  const subject = (draft.subject ?? '').trim();
+  if (subject && !has('Name on the document')) facts.push({ label: 'Name on the document', value: subject });
+  if (isHousehold(c.data)) {
+    const a = c.data.address;
+    const address = [a.street, a.city, `${a.state} ${a.zip}`].filter(Boolean).join(', ');
+    if (draft.category === 'residency_housing') {
+      if (!has('Address')) facts.push({ label: 'Address (as reported on the application)', value: address });
+      if (!has('State')) facts.push({ label: 'State the household must live in (exact)', value: `${stateName(env.STATE_CODE) ?? env.STATE_CODE} (${env.STATE_CODE})` });
+    }
+  } else if (isProvider(c.data) && draft.category === 'license' && !has('State')) {
+    facts.push({ label: 'State', value: env.STATE_CODE });
+  }
+  return facts;
+}
 
 export class ServiceError extends Error {
   constructor(
@@ -263,6 +288,13 @@ export const verificationService = {
       await store.saveRequest(result.request);
       return { request: result.request };
     }
+    if (action.type === 'add_task') {
+      const c = await store.getCase(r.case_id);
+      if (!c) throw new ServiceError(404, 'case_not_found');
+      const draft: NewTaskDraft = { ...action.task, declared: declaredFactsForAddedTask(c, action.task) };
+      const request = await save(applyReviewAction(r, { type: 'add_task', task: draft }));
+      return { request };
+    }
     if (action.type === 'return') {
       const result = applyReviewAction(r, action);
       if (!result.ok) throw new ServiceError(result.status, result.error);
@@ -406,7 +438,8 @@ export const verificationService = {
     }
     if (!session) throw new ServiceError(404, 'session_not_found');
     if (!session.succeeded) throw new ServiceError(409, 'clear_not_complete', `CLEAR session status: ${session.status}`);
-    const verification = await deriveIdentityVerification(session.traits, task.subject ?? r.subject_name, clearMode(), homeState);
+    // Coverage discovery applies to households (eligibility); providers verify identity only.
+    const verification = await deriveIdentityVerification(session.traits, task.subject ?? r.subject_name, clearMode(), homeState, r.kind === 'household');
     return save(applyApplicantAction(r, { type: 'verify_identity', task_id: taskId, verification }));
   },
 

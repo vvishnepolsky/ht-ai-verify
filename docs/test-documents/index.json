@@ -330,6 +330,36 @@
     ]
   },
   {
+    "group": "household",
+    "task": "Proof of where you live (worker-added)",
+    "expected": "pass",
+    "why": "Reuse vv-utility-bill-pass: current bill at the Tennessee address in Vadim’s name.",
+    "files": [
+      "vv-residency-pass.pdf",
+      "vv-residency-pass.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Proof of where you live (worker-added)",
+    "expected": "fail",
+    "why": "Current Con Edison bill in Vadim’s name at a New York service address → contradicts the Tennessee address / state on the application.",
+    "files": [
+      "vv-residency-fail-out-of-state.pdf",
+      "vv-residency-fail-out-of-state.png"
+    ]
+  },
+  {
+    "group": "household",
+    "task": "Proof of where you live (worker-added)",
+    "expected": "fail",
+    "why": "Bill at the Tennessee address but dated March 2025 → older than 60 days, no longer shows where they live now.",
+    "files": [
+      "vv-residency-fail-old.pdf",
+      "vv-residency-fail-old.png"
+    ]
+  },
+  {
     "group": "provider",
     "task": "Photo ID — Vadim Vishnepolsky",
     "expected": "pass",

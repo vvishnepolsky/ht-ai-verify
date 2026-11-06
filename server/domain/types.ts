@@ -77,14 +77,35 @@ export interface DeclaredFact {
   value: string;
 }
 
+/**
+ * Health coverage CLEAR's identity check discovered (traits.health_insurance),
+ * shaped after the CLEAR Verified API payload the State-X / Georgia demos use.
+ */
 export interface HealthCoverage {
+  payer_id: string | null;
   payer_name: string;
   plan_status: string;
   member_id: string | null;
+  group_id?: string | null;
   policy_holder: string | null;
+  /** Policy holder's relationship to the person when someone else holds the policy (e.g. 'spouse'). */
+  policy_holder_relationship?: string | null;
+  coverage_start_date?: string | null;
+  /** 'medicaid' | 'employer' | 'marketplace' | 'medicare' | 'other' | null when unknown. */
+  coverage_type: string | null;
+  /** State the coverage belongs to (a Medicaid program's state), when it can be resolved. */
+  coverage_state: string | null;
+  coverage_state_name: string | null;
   is_medicaid: boolean;
+  is_active: boolean;
+  /** Medicaid from a state other than the agency's (duplicate-enrollment risk). */
   out_of_state: boolean;
+  /** 'clear' when CLEAR returned it; 'demo' when the CLEAR_DEMO_COVERAGE overlay supplied it. */
+  source: 'clear' | 'demo';
 }
+
+/** Worker-facing classification of the coverage CLEAR found. */
+export type CoverageFinding = 'oos_medicaid' | 'in_state_medicaid' | 'third_party' | 'inactive' | null;
 
 export interface IdentityVerification {
   provider: 'clear';
@@ -95,7 +116,9 @@ export interface IdentityVerification {
   issuing_state: string;
   expiration_date: string | null;
   health_coverage: HealthCoverage | null;
+  /** Human-readable worker note derived from the coverage (null when nothing to flag). */
   coverage_flag: string | null;
+  coverage_finding?: CoverageFinding;
   requested_name?: string;
   name_match?: boolean;
   verified_at: string;
@@ -171,6 +194,7 @@ export type RequestEventType =
   | 'review_started'
   | 'task_approved'
   | 'task_rejected'
+  | 'task_added'
   | 'task_evidence_cleared'
   | 'returned'
   | 'link_resent'
@@ -246,6 +270,9 @@ export interface VerificationTask {
   expected_employers?: string[];
   files: UploadedFileMeta[];
   reviewer_note?: string;
+  /** Set when a worker added this item during review (not derived from the case data). */
+  added_by?: 'worker';
+  added_at?: string;
   identity_verification?: IdentityVerification;
   income_verification?: IncomeVerification;
   assets_verification?: AssetsVerification;

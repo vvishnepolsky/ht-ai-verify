@@ -243,7 +243,7 @@ function Checklist({ base, session, onSession, onDeadLink }: { base: string; ses
         <h1>{provider ? 'Your credentials' : 'Your documents'}</h1>
         <p className="muted">
           {returned
-            ? `The ${provider ? 'enrollment team' : 'caseworker'} asked for a few changes. Update the items marked “Needs attention” and resubmit.`
+            ? `The ${provider ? 'enrollment team' : 'caseworker'} asked for a few changes or new documents. Update the items marked “Needs attention” or “Needed” and resubmit.`
             : provider
               ? 'For each item, upload a current copy or take a photo. Your identity can be verified instantly.'
               : 'For each item, take a photo or upload a file. Identity, income and bank accounts can be verified instantly.'}

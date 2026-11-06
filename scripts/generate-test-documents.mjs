@@ -162,10 +162,10 @@ function bankStatement({ holder, periodStart, periodEnd, opening, closing, bank 
   );
 }
 
-function utilityBill({ customer, serviceAddress, billDate, due, amount }) {
+function utilityBill({ customer, serviceAddress, billDate, due, amount, utility = 'Nashville Electric Service', account = '4418-2207-11' }) {
   return page(
     'Electric Service Bill',
-    `<header><div class="org">Nashville Electric Service</div><h1>Electric Service Bill</h1><div class="sub">Account 4418-2207-11</div></header>
+    `<header><div class="org">${utility}</div><h1>Electric Service Bill</h1><div class="sub">Account ${account}</div></header>
     <table><tr><th>Customer</th><td>${customer}</td><th>Bill date</th><td>${billDate}</td></tr><tr><th>Service address</th><td>${serviceAddress}</td><th>Due date</th><td>${due}</td></tr></table>
     <div class="box"><div class="lbl">Amount due</div><div class="big">${money(amount)}</div></div>
     <table><tr><th>Meter</th><th>Previous</th><th>Current</th><th>kWh used</th><th class="right">Charge</th></tr><tr><td>E-220918</td><td>41,207</td><td>41,864</td><td>657</td><td class="right">${money(amount - 12.5)}</td></tr><tr><td colspan="4">Basic service charge</td><td class="right">${money(12.5)}</td></tr></table>`,
@@ -295,6 +295,10 @@ add('household', 'Bank statements (last 60 days)', 'pass', 'First Cumberland Ban
 add('household', 'Lease agreement', 'pass', 'Current lease, April 2026 – March 2027, rent $950 — matches the application.', 'vv-lease-pass', lease({ term: { start: 'April 1, 2026', end: 'March 31, 2027' }, rent: 950, signed: 'March 15, 2026', h: V }));
 add('household', 'Lease agreement', 'fail', 'Prior lease that ended March 2024 at $875 → lapsed AND rent contradicts the application.', 'vv-lease-fail-expired', lease({ term: { start: 'April 1, 2023', end: 'March 31, 2024' }, rent: 875, signed: 'March 15, 2023', h: V }));
 add('household', 'Utility bill', 'pass', 'October 2026 electric bill at the service address in Vadim’s name.', 'vv-utility-bill-pass', utilityBill({ customer: V.tenant, serviceAddress: V.address, billDate: '10/18/2026', due: '11/08/2026', amount: 102.4 }));
+// Proof of residency — the item a worker adds after CLEAR reports active out-of-state (New York) Medicaid.
+add('household', 'Proof of where you live (worker-added)', 'pass', 'Reuse vv-utility-bill-pass: current bill at the Tennessee address in Vadim’s name.', 'vv-residency-pass', utilityBill({ customer: V.tenant, serviceAddress: V.address, billDate: '10/18/2026', due: '11/08/2026', amount: 102.4 }));
+add('household', 'Proof of where you live (worker-added)', 'fail', 'Current Con Edison bill in Vadim’s name at a New York service address → contradicts the Tennessee address / state on the application.', 'vv-residency-fail-out-of-state', utilityBill({ customer: V.tenant, serviceAddress: '245 W 54th St, Apt 7C, New York, NY 10019', billDate: '10/16/2026', due: '11/06/2026', amount: 118.3, utility: 'Con Edison', account: '72-1190-4457-002' }));
+add('household', 'Proof of where you live (worker-added)', 'fail', 'Bill at the Tennessee address but dated March 2025 → older than 60 days, no longer shows where they live now.', 'vv-residency-fail-old', utilityBill({ customer: V.tenant, serviceAddress: V.address, billDate: '03/18/2025', due: '04/08/2025', amount: 131.9 }));
 add('provider', 'Photo ID — Vadim Vishnepolsky', 'pass', 'Tennessee driver license in Vadim Vishnepolsky’s name, expires 2028.', 'vvp-photo-id-pass', vLicense('441209318'));
 add('provider', 'Tennessee medical license MD-50117', 'pass', 'Active TN medical license MD-50117 for Vadim Vishnepolsky, MD, valid through July 31, 2027.', 'vvp-license-pass', medicalLicense({ name: 'Vadim Vishnepolsky, MD', number: 'MD-50117', issued: 'August 1, 2025', expires: 'July 31, 2027' }));
 add('provider', 'Tennessee medical license MD-50117', 'fail', 'Same license, but the term ended July 31, 2024 → lapsed.', 'vvp-license-fail-expired', medicalLicense({ name: 'Vadim Vishnepolsky, MD', number: 'MD-50117', issued: 'August 1, 2023', expires: 'July 31, 2024' }));

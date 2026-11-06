@@ -41,9 +41,43 @@ those paths run a clearly-labelled simulation.
 Jordan Reyes household and Elena Vasquez, MD provider — one pair per
 verification item, identical except for the single thing the AI should catch
 (expired term, wrong person, wrong employer, wrong license number, wrong
-document type). They live only in the repo (not served by the app): download
+document type). `vv-residency-*` cover the worker-added "proof of where you
+live" item: a current Tennessee bill passes, a New York bill or a 2025 bill
+fails. They live only in the repo (not served by the app): download
 them from GitHub or the checkout and upload them through the hosted flow.
 Regenerate with `npm run test-documents` (needs Chrome for the PDF/PNG render).
+
+## CLEAR coverage discovery (demo)
+
+CLEAR's identity check can also return the person's health coverage
+(`traits.health_insurance`). CLEAR's sandbox never does, so — like the
+`DEMO_COVERAGE_SCENARIO` overlay in the State-X and Georgia CLEAR demos —
+`CLEAR_DEMO_COVERAGE` overlays a deterministic record on **household**
+identity checks (providers verify identity only):
+
+| Setting | Effect |
+|---|---|
+| `CLEAR_DEMO_COVERAGE=medicaid` | Active Medicaid with `CLEAR_DEMO_COVERAGE_STATE`'s program (default `NY` → "New York Medicaid"). When that state differs from `STATE_CODE` the worker sees an **out-of-state Medicaid / possible duplicate enrollment** finding; the household sees a plain-language notice that more information may be requested. |
+| `CLEAR_DEMO_COVERAGE=employer_plan` | Active Aetna employer plan held by a spouse → third-party-liability note only. |
+| unset / `off` | Only what CLEAR actually returned (nothing in sandbox or simulation). |
+| `CLEAR_DEMO_COVERAGE_STATUS`, `_MEMBER_ID`, `_START` | Fine-tune the record (`ACTIVE`, `NY48213579`, `2025-11-01`). |
+
+The record is labelled **Demo overlay** in the console and `/api/config` and
+Demo settings show the active scenario. Never enable it on a real deployment.
+
+## Worker-added verifications
+
+The case data derives the initial checklist, but the worker decides what else
+to ask for. On any request that is not yet verified, **Add a verification**
+(review header, or the shortcuts on a coverage finding) adds an item as
+*Needed*: pick a preset (proof of residency, proof other coverage ended,
+citizenship/immigration status, more income proof, child-care expenses; for
+providers a license, liability insurance, board certification, W-9) or write
+a custom one, choose who it is for, whether it is required, and which instant
+checks to allow besides upload. Facts from the case (name, address, agency
+state) are attached so the AI first pass checks the document against them.
+Before submission the item simply appears on the hosted checklist; after
+submission **Return for corrections** sends a new secure link with it.
 
 ## Layout
 

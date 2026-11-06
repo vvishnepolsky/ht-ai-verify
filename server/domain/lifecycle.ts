@@ -11,6 +11,7 @@
  */
 import type {
   AssetsVerification,
+  DeclaredFact,
   EventActor,
   IdentityVerification,
   IncomeVerification,
@@ -18,6 +19,8 @@ import type {
   RequestEvent,
   RequestEventType,
   RequestStatus,
+  TaskCategory,
+  TaskMethod,
   TaskStatus,
   UploadedFileMeta,
   VerificationRequest,
@@ -61,13 +64,55 @@ export type ApplicantAction =
   | { type: 'reset_task'; task_id: string }
   | { type: 'submit' };
 
+/** A verification the worker adds during review (e.g. proof of residency after an out-of-state Medicaid finding). */
+export interface NewTaskDraft {
+  category: TaskCategory;
+  title: string;
+  reason: string;
+  subject?: string;
+  required?: boolean;
+  methods?: TaskMethod[];
+  declared?: DeclaredFact[];
+}
+
 export type ReviewAction =
   | { type: 'start_review' }
   | { type: 'approve_task'; task_id: string }
   | { type: 'reject_task'; task_id: string; reason: string }
   | { type: 'clear_task_evidence'; task_id: string }
+  | { type: 'add_task'; task: NewTaskDraft }
   | { type: 'return' }
   | { type: 'verify' };
+
+export const TASK_CATEGORIES: TaskCategory[] = [
+  'identity',
+  'income',
+  'assets',
+  'residency_housing',
+  'expenses_deductions',
+  'medical_bills',
+  'license',
+  'credential',
+  'insurance',
+];
+
+/** Methods a worker-added task may offer, by category (the registry check is never worker-added). */
+export function allowedMethodsFor(category: TaskCategory): TaskMethod[] {
+  switch (category) {
+    case 'identity':
+      return ['upload', 'clear'];
+    case 'income':
+    case 'assets':
+      return ['upload', 'argyle'];
+    default:
+      return ['upload'];
+  }
+}
+
+/** Items the worker added that the applicant has not provided yet. */
+export function workerAddedPending(request: Pick<VerificationRequest, 'tasks'>): VerificationTask[] {
+  return request.tasks.filter((t) => t.added_by === 'worker' && t.status === 'needed');
+}
 
 const allowedRequest = (from: RequestStatus, to: RequestStatus) => REQUEST_TRANSITIONS[from].includes(to);
 const allowedTask = (from: TaskStatus, to: TaskStatus) => TASK_TRANSITIONS[from].includes(to);
@@ -354,13 +399,62 @@ function handleClearTaskEvidence(request: VerificationRequest, taskId: string, n
   return ok(addEvent({ ...request, tasks, updated_at: now }, 'worker', 'task_evidence_cleared', taskId, now));
 }
 
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
+}
+
+/**
+ * Worker adds a verification item during review. Allowed in any non-terminal
+ * status: before submission it simply appears on the applicant's list; after
+ * submission the worker uses Return for corrections to send it back.
+ */
+function handleAddTask(request: VerificationRequest, draft: NewTaskDraft, now: string): ActionResult {
+  const title = (draft.title ?? '').trim();
+  const reason = (draft.reason ?? '').trim();
+  if (!TASK_CATEGORIES.includes(draft.category)) return err(400, 'invalid_category');
+  if (title.length === 0) return err(400, 'title_required');
+  if (reason.length === 0) return err(400, 'reason_required');
+  if (title.length > 120 || reason.length > 1000) return err(400, 'too_long');
+  const allowed = allowedMethodsFor(draft.category);
+  const requested: TaskMethod[] = draft.methods && draft.methods.length > 0 ? draft.methods : ['upload'];
+  const methods = requested.filter((m) => allowed.includes(m));
+  if (methods.length === 0) return err(400, 'invalid_methods');
+  const subject = (draft.subject ?? '').trim();
+  const base = `${draft.category}:${slugify(title) || 'item'}`;
+  let id = base;
+  for (let n = 2; request.tasks.some((t) => t.id === id); n++) id = `${base}-${n}`;
+  const task: VerificationTask = {
+    id,
+    category: draft.category,
+    ...(subject ? { subject } : {}),
+    title,
+    reason,
+    required: draft.required !== false,
+    methods,
+    method: methods[0] ?? 'upload',
+    status: 'needed',
+    ...(draft.declared && draft.declared.length > 0 ? { declared: draft.declared } : {}),
+    files: [],
+    added_by: 'worker',
+    added_at: now,
+    updated_at: now,
+  };
+  const updated: VerificationRequest = { ...request, tasks: [...request.tasks, task], updated_at: now };
+  return ok(addEvent(updated, 'worker', 'task_added', id, now));
+}
+
 function handleReturn(request: VerificationRequest, now: string): ActionResult {
   if (!allowedRequest(request.status, 'returned')) return err(409, 'invalid_status');
   const rejected = request.tasks.filter((t) => t.status === 'rejected');
   const hasCleared = request.tasks.some(
     (t) => t.status === 'needed' && request.events.some((e) => e.type === 'task_evidence_cleared' && e.detail === t.id),
   );
-  if (rejected.length === 0 && !hasCleared) return err(409, 'no_rejected_tasks');
+  const hasAdded = workerAddedPending(request).length > 0;
+  if (rejected.length === 0 && !hasCleared && !hasAdded) return err(409, 'no_rejected_tasks');
   if (!rejected.every((t) => !!t.reviewer_note && t.reviewer_note.trim().length > 0)) return err(409, 'missing_reviewer_note');
   const updated: VerificationRequest = { ...request, status: 'returned', updated_at: now };
   return ok(addEvent(updated, 'worker', 'returned', undefined, now));
@@ -389,6 +483,8 @@ export function applyReviewAction(
       return handleRejectTask(request, action.task_id, action.reason, now);
     case 'clear_task_evidence':
       return handleClearTaskEvidence(request, action.task_id, now);
+    case 'add_task':
+      return handleAddTask(request, action.task, now);
     case 'return':
       return handleReturn(request, now);
     case 'verify':

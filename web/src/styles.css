@@ -305,6 +305,10 @@ dl.mini dd { font-weight: 500; text-align: right; }
 /* ---- Forms ----------------------------------------------------------------- */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form-grid .full { grid-column: 1 / -1; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+label.check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+label.check input { width: 16px; height: 16px; accent-color: var(--ht-primary); }
 label.field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ht-text); }
 label.field .hint { font-weight: 400; color: var(--ht-text-muted); font-size: 12px; }
 .input, label.field input, label.field select, label.field textarea {
