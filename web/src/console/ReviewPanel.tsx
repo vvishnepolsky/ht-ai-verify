@@ -555,7 +555,7 @@ function CoveragePanel({
             : 'Coverage found';
   return (
     <div className="panel" style={{ marginTop: 8 }}>
-      <PanelHead icon={<I.Shield />} label="Health coverage found by CLEAR" right={c.source === 'demo' ? <Chip tone="warning">Demo overlay</Chip> : undefined} />
+      <PanelHead icon={<I.Shield />} label="Health coverage found by CLEAR" />
       <div className={`flag${tone === 'warning' ? '' : ' ok'}`}>
         {tone === 'warning' ? <I.Warn /> : <I.Check />} {headline}
       </div>
@@ -612,7 +612,6 @@ function CoveragePanel({
           </button>
         </div>
       )}
-      {c.source === 'demo' && <p className="small muted">Demo overlay (CLEAR_DEMO_COVERAGE) — CLEAR's sandbox does not return coverage, so this record is supplied by configuration.</p>}
     </div>
   );
 }
