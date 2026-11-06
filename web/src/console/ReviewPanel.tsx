@@ -489,7 +489,7 @@ function IdentityPanel({
 }) {
   return (
     <div className="panel">
-      <PanelHead icon={<I.Id />} label="CLEAR identity" right={<ModeTag mode={v.mode} />} />
+      <PanelHead icon={<I.Id />} label="CLEAR identity" />
       <dl className="grid">
         <div>
           <dt>Verified name</dt>
@@ -555,9 +555,9 @@ function CoveragePanel({
             : 'Coverage found';
   return (
     <div className="panel" style={{ marginTop: 8 }}>
-      <PanelHead icon={<I.Shield />} label="Health coverage found by CLEAR" right={c.source === 'demo' ? <Chip tone="warning">Demo overlay</Chip> : <ModeTag mode={v.mode} />} />
-      <div className={`alert ${tone === 'warning' ? 'warning' : tone === 'info' ? 'info' : 'success'} small`}>
-        <b>{headline}.</b> {v.coverage_flag}
+      <PanelHead icon={<I.Shield />} label="Health coverage found by CLEAR" right={c.source === 'demo' ? <Chip tone="warning">Demo overlay</Chip> : undefined} />
+      <div className={`flag${tone === 'warning' ? '' : ' ok'}`}>
+        {tone === 'warning' ? <I.Warn /> : <I.Check />} {headline}
       </div>
       <dl className="grid">
         <div>
