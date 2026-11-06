@@ -307,6 +307,14 @@ export interface ApplicantView {
   status: RequestStatus;
   token_expires_at: string;
   tasks: VerificationTask[];
+  /**
+   * True while the request is in a corrections round (returned by the worker
+   * and not yet resubmitted). The hosted checklist then shows only the items
+   * that still need something — accepted items stay hidden.
+   */
+  corrections: boolean;
+  /** When the current corrections round started (the last `returned` event). */
+  corrections_since?: string;
   submitted_at?: string;
   verified_at?: string;
   integrations: { clear: 'sandbox' | 'live' | 'simulated' | 'off'; argyle: 'sandbox' | 'live' | 'simulated' | 'off' };

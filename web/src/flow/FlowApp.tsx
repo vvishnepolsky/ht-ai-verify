@@ -197,18 +197,28 @@ function Checklist({ base, session, onSession, onDeadLink }: { base: string; ses
   const [highlight, setHighlight] = useState<Set<string>>(new Set());
   const timer = useRef<number | null>(null);
 
-  const visible = session.tasks.filter((t) => t.category !== 'npi');
+  // Corrections round: only what the worker sent back or newly asked for.
+  // Accepted (and still-pending) items are settled and stay out of the way.
+  const returned = session.corrections === true || session.status === 'returned';
+  const since = session.corrections_since ?? '';
+  const visible = session.tasks.filter(
+    (t) =>
+      t.category !== 'npi' &&
+      (!returned ||
+        t.status === 'rejected' ||
+        (t.status === 'needed' && (t.required || t.added_by === 'worker')) ||
+        (t.status === 'provided' && t.updated_at > since)),
+  );
   const required = visible.filter((t) => t.required);
   const done = required.filter((t) => t.status === 'provided' || t.status === 'approved').length;
   const allDone = required.length > 0 && done === required.length;
-  const returned = session.status === 'returned';
   const provider = session.kind === 'provider';
   const flagged = visible.filter(
     (t) =>
       t.status !== 'approved' &&
       (t.files.some((f) => f.ocr?.verdict === 'review') || t.identity_verification?.name_match === false || t.income_verification?.employer_match === false),
   );
-  const groups = groupTasks(session.tasks, session.kind);
+  const groups = groupTasks(visible, session.kind);
 
   async function submit() {
     setWarn(false);
@@ -243,7 +253,7 @@ function Checklist({ base, session, onSession, onDeadLink }: { base: string; ses
         <h1>{provider ? 'Your credentials' : 'Your documents'}</h1>
         <p className="muted">
           {returned
-            ? `The ${provider ? 'enrollment team' : 'caseworker'} asked for a few changes or new documents. Update the items marked “Needs attention” or “Needed” and resubmit.`
+            ? `The ${provider ? 'enrollment team' : 'caseworker'} needs the items below. Everything you already provided has been accepted and is not shown. Resubmit when the items are ready.`
             : provider
               ? 'For each item, upload a current copy or take a photo. Your identity can be verified instantly.'
               : 'For each item, take a photo or upload a file. Identity, income and bank accounts can be verified instantly.'}

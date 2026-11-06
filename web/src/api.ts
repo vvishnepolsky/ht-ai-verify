@@ -221,6 +221,9 @@ export interface ApplicantView {
   status: RequestStatus;
   token_expires_at: string;
   tasks: VerificationTask[];
+  /** Corrections round: only items that still need something are shown. */
+  corrections: boolean;
+  corrections_since?: string;
   submitted_at?: string;
   verified_at?: string;
   integrations: { clear: Mode | 'off'; argyle: Mode | 'off' };

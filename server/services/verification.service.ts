@@ -321,11 +321,16 @@ export const verificationService = {
   },
 
   toApplicantView(r: VerificationRequest): ApplicantView {
+    const lastReturned = r.events.map((e) => e.type).lastIndexOf('returned');
+    const lastSubmitted = r.events.map((e) => e.type).lastIndexOf('submitted');
+    const corrections = (r.status === 'returned' || r.status === 'in_progress') && lastReturned > lastSubmitted;
     return {
       kind: r.kind,
       subject_name: r.subject_name,
       agency_name: env.AGENCY_NAME,
       status: r.status,
+      corrections,
+      ...(corrections ? { corrections_since: r.events[lastReturned]!.at } : {}),
       token_expires_at: r.token_expires_at,
       tasks: r.tasks.map((t) => {
         const { clear_session_id: _c, argyle_user_id: _a, ...rest } = t;
