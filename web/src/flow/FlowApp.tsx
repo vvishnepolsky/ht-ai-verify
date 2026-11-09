@@ -218,7 +218,15 @@ function Checklist({ base, session, onSession, onDeadLink }: { base: string; ses
       t.status !== 'approved' &&
       (t.files.some((f) => f.ocr?.verdict === 'review') || t.identity_verification?.name_match === false || t.income_verification?.employer_match === false),
   );
-  const groups = groupTasks(visible, session.kind);
+  // Items the worker added during review go in their own section at the top
+  // so they are not buried inside the per-person groups. Once approved they
+  // fall back into the ordinary list.
+  const newRequests = visible.filter((t) => t.added_by === 'worker' && t.status !== 'approved');
+  const newIds = new Set(newRequests.map((t) => t.id));
+  const groups = groupTasks(
+    visible.filter((t) => !newIds.has(t.id)),
+    session.kind,
+  );
 
   async function submit() {
     setWarn(false);
@@ -269,6 +277,21 @@ function Checklist({ base, session, onSession, onDeadLink }: { base: string; ses
         <div className="alert error" role="alert">
           {error}
         </div>
+      )}
+      {newRequests.length > 0 && (
+        <section className="stack tight new-requests" aria-labelledby="new-requests-head">
+          <div className="alert info new-requests-head">
+            <div className="strong" id="new-requests-head">
+              {newRequests.length === 1 ? 'New request' : `${newRequests.length} new requests`} from your {provider ? 'enrollment team' : 'caseworker'}
+            </div>
+            <div className="small">
+              {newRequests.length === 1 ? 'This item was' : 'These items were'} added after reviewing what you sent. {newRequests.length === 1 ? 'It is' : 'They are'} listed first so you can see what is new.
+            </div>
+          </div>
+          {newRequests.map((t) => (
+            <TaskCard key={t.id} base={base} task={t} session={session} onSession={onSession} onError={onActionError} highlighted={highlight.has(t.id)} />
+          ))}
+        </section>
       )}
       {groups.map((g) => (
         <section key={g.key} className="stack tight" aria-label={g.heading}>

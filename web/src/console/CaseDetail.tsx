@@ -71,6 +71,10 @@ export function CaseDetail({ id, config }: { id: string; config: Config }) {
   const household = c.kind === 'household';
   const request = data.requests.find((r) => r.status !== 'verified') ?? data.requests[0] ?? null;
   const listPath = household ? '#/households' : '#/providers';
+  // Once the applicant submits, the link has done its job; a resend would only
+  // reopen a checklist that is already under review. Return for corrections
+  // mints and sends the new link instead.
+  const submitted = request?.status === 'submitted' || request?.status === 'under_review';
 
   async function send() {
     setSending(true);
@@ -153,7 +157,13 @@ export function CaseDetail({ id, config }: { id: string; config: Config }) {
               <I.Send /> {sending ? 'Sending…' : household ? 'Text secure link' : 'Email secure link'}
             </button>
           ) : (
-            <button type="button" className="btn outline" disabled={sending} onClick={() => void resend()}>
+            <button
+              type="button"
+              className="btn outline"
+              disabled={sending || submitted}
+              title={submitted ? 'The link was used and the submission is in review. Return the request for corrections to send a new link.' : undefined}
+              onClick={() => void resend()}
+            >
               <I.Send /> {sending ? 'Sending…' : 'Resend link'}
             </button>
           )}

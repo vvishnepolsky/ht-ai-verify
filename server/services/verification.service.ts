@@ -220,6 +220,9 @@ export const verificationService = {
     const r = await store.getRequest(requestId);
     if (!r) throw new ServiceError(404, 'not_found');
     if (r.status === 'verified') throw new ServiceError(409, 'terminal');
+    // Submitted / under review: the applicant is done until the worker returns
+    // the request, which mints and delivers the new link itself.
+    if (r.status === 'submitted' || r.status === 'under_review') throw new ServiceError(409, 'already_submitted');
     const c = await store.getCase(r.case_id);
     if (!c) throw new ServiceError(404, 'case_not_found');
     const rawToken = mintToken();

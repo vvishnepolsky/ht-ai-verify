@@ -283,6 +283,9 @@ dl.mini dd { font-weight: 500; text-align: right; }
 .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--ht-primary-tint); color: var(--ht-primary-dark); font-size: 11px; font-weight: 600; display: grid; place-content: center; }
 .subject-head h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ht-text-muted); }
 .subject-head .n { font-size: 12px; color: var(--ht-text-subtle); }
+.new-requests { padding: 12px; border-radius: 12px; border: 1px solid var(--ht-royal-mid); background: var(--ht-royal-tint); }
+.new-requests .new-requests-head { border: 0; background: transparent; padding: 2px 4px 0; display: grid; gap: 2px; }
+.new-requests .task { border-color: var(--ht-royal-mid); }
 .declared { display: flex; flex-wrap: wrap; gap: 6px; }
 .declared span { font-size: 12px; background: var(--ht-grey-2); border: 1px solid var(--ht-grey-3); border-radius: 4px; padding: 1px 6px; color: var(--ht-text-muted); }
 .declared span b { font-weight: 500; color: var(--ht-text); }
