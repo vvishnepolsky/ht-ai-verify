@@ -92,6 +92,8 @@ export interface DeliveryResult {
   /** Returned to the worker so the link can be shared by hand when no channel delivered. */
   hosted_url: string;
   channel: 'sms' | 'email';
+  /** Why no channel delivered (provider rejection text or "not configured"), for the worker. */
+  error?: string;
 }
 
 async function deliver(c: CaseRecord, rawToken: string, variant: 'initial' | 'returned' | 'resend'): Promise<DeliveryResult> {
@@ -122,24 +124,34 @@ async function deliver(c: CaseRecord, rawToken: string, variant: 'initial' | 're
 
   let sms = false;
   let email = false;
-  if (contact.channel === 'sms' && contact.phone && isTwilioConfigured()) {
-    try {
-      await sendSms(contact.phone, smsBody);
-      sms = true;
-    } catch {
-      /* fall through to email */
+  let error: string | undefined;
+  if (contact.channel === 'sms') {
+    if (!contact.phone) error = 'No deliverable phone number on the case.';
+    else if (!isTwilioConfigured()) error = 'Text messaging is not configured.';
+    else {
+      try {
+        await sendSms(contact.phone, smsBody);
+        sms = true;
+      } catch (e) {
+        error = `Text message rejected: ${e instanceof Error ? e.message : 'unknown error'}`;
+      }
     }
   }
-  if (contact.email && isEmailConfigured() && (contact.channel === 'email' || !sms)) {
-    try {
-      await sendEmail(contact.email, subject, emailBody);
-      email = true;
-    } catch {
-      /* worker gets the manual-share link */
+  if (contact.email && (contact.channel === 'email' || !sms)) {
+    if (!isEmailConfigured()) error = error ?? 'Email delivery is not configured.';
+    else {
+      try {
+        await sendEmail(contact.email, subject, emailBody);
+        email = true;
+      } catch (e) {
+        error = `Email rejected: ${e instanceof Error ? e.message : 'unknown error'}`;
+      }
     }
+  } else if (!contact.email && contact.channel === 'email') {
+    error = 'No deliverable email address on the case.';
   }
   if (!sms && !email) console.log(`[deliver] no channel delivered for case ${c.id} — manual share`);
-  return { sms, email, hosted_url: url, channel: contact.channel };
+  return { sms, email, hosted_url: url, channel: contact.channel, ...(!sms && !email && error ? { error } : {}) };
 }
 
 function save(result: ActionResult): Promise<VerificationRequest> {

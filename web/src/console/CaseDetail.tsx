@@ -184,7 +184,7 @@ export function CaseDetail({ id, config }: { id: string; config: Config }) {
                 ? `Secure link sent by text message to ${formatPhone(contact.phone)}.`
                 : delivery.email
                   ? `Secure link emailed to ${contact.email}.`
-                  : `${delivery.channel === 'sms' ? `Text message could not be sent (${config.integrations.sms === 'off' ? 'SMS is not configured' : 'no deliverable phone number'})` : `Email could not be sent (${config.integrations.email === 'off' ? 'email delivery is not configured' : 'no deliverable address'})`}. Share this secure link with them directly:`}
+                  : `${delivery.channel === 'sms' ? 'Text message could not be sent' : 'Email could not be sent'}. ${delivery.error ?? (delivery.channel === 'sms' ? (config.integrations.sms === 'off' ? 'SMS is not configured.' : 'No deliverable phone number.') : config.integrations.email === 'off' ? 'Email delivery is not configured.' : 'No deliverable address.')} Share this secure link with them directly:`}
             </div>
             <CopyBox value={delivery.hosted_url} label={delivery.sms || delivery.email ? 'Same link, for your reference (open it to see what they see)' : undefined} />
             <div>

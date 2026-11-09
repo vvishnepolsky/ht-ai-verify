@@ -32,8 +32,19 @@ export async function sendEmail(to: string, subject: string, text: string): Prom
     body: JSON.stringify({ from: env.EMAIL_FROM, to: [to], subject, text, html }),
   });
   if (!res.ok) {
-    console.error('[email] send rejected', { httpStatus: res.status });
-    throw new EmailError('Email send failed');
+    // Resend answers with { name, message }. The message explains the
+    // rejection (unverified domain, test-sender recipient limit, bad key) and
+    // names no recipient data beyond the account owner's own address, so it
+    // is safe to show the worker. Never log the request body or the key.
+    let reason = `Email provider returned HTTP ${res.status}`;
+    try {
+      const body = (await res.json()) as { name?: string; message?: string };
+      if (body.message) reason = body.message;
+      console.error('[email] send rejected', { httpStatus: res.status, name: body.name ?? null });
+    } catch {
+      console.error('[email] send rejected', { httpStatus: res.status });
+    }
+    throw new EmailError(reason);
   }
 }
 

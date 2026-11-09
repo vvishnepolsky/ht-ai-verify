@@ -419,6 +419,8 @@ export interface Delivery {
   email: boolean;
   hosted_url: string;
   channel: 'sms' | 'email';
+  /** Present when nothing was delivered: the provider's rejection text or a configuration note. */
+  error?: string;
 }
 export interface NppesSummary {
   npi: string;

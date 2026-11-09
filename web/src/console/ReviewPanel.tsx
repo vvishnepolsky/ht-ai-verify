@@ -146,7 +146,7 @@ export function ReviewPanel({
             <div>
               {notice.sms || notice.email
                 ? `Returned — a new secure link was sent by ${notice.sms ? 'text message' : 'email'}.`
-                : `Returned. ${notice.channel === 'sms' ? 'No text message' : 'No email'} could be delivered, so share this new link with them directly:`}
+                : `Returned. ${notice.channel === 'sms' ? 'No text message' : 'No email'} could be delivered${notice.error ? ` (${notice.error.replace(/\.$/, '')})` : ''}, so share this new link with them directly:`}
             </div>
             {!notice.sms && !notice.email && <CopyBox value={notice.hosted_url} />}
             <div>
